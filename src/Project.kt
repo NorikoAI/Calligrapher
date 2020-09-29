@@ -13,13 +13,18 @@ import kotlin.random.Random
 import org.sourcekey.NorikoAI.Calligrapher.OpentypeJS.Font
 import org.sourcekey.NorikoAI.Calligrapher.OpentypeJS.Glyph
 import org.sourcekey.NorikoAI.Calligrapher.OpentypeJS.Path
+import react.RBuilder
+import react.dom.button
+import react.dom.div
+import react.dom.svg
+
 @JsModule("src/font/SourceHanSans_v1.001/SourceHanSansTC-Regular.otf") external val sourceHanSansTCUrl: String
 
 
 data class Project(
         val projectName: String,
-        val produceFontUrl: String,
-        val referenceFontUrl: String = sourceHanSansTCUrl
+        private val produceFontUrl: String,
+        private val referenceFontUrl: String = sourceHanSansTCUrl
 ) {
 
     /**
@@ -52,26 +57,22 @@ data class Project(
     }()
     private set
 
-    private fun Font.getGlyphByUnicode(unicode: Int): Glyph?{
+    private fun Font.getOrNullGlyphByUnicode(unicode: Int): Glyph?{
         return this.glyphs.glyphs.toArray().find { glyph -> glyph.unicode == unicode }
     }
 
-    /**
-     *
-     * */
-    data class GlyphContrast(val referenceGlyph: Glyph, val produceGlyph: Glyph)
+    private val Glyph.reference: Glyph?
+        get() = referenceFont.glyphs.glyphs.toArray().find{ g -> g.unicode == this.unicode }
 
     /**
      *
      * */
-    fun Array<GlyphContrast>.getOrNullByUnicode(unicode: Int): GlyphContrast?{
-        return this.find{ glyphContrast -> glyphContrast.referenceGlyph.unicode == unicode }
-    }
+    private data class GlyphContrast(val referenceGlyph: Glyph, val produceGlyph: Glyph)
 
     /**
      *
      * */
-    data class TrainingSet(val x: Array<Glyph>, val y: Array<Glyph>)
+    private data class TrainingSet(val x: Array<Glyph>, val y: Array<Glyph>)
 
     /**
      *
@@ -87,13 +88,9 @@ data class Project(
                     produceGlyphs.find{charP -> charP.unicode === charR.unicode}?: Glyph(js("{}"))
             )
         }.filter{char ->
-            char.referenceGlyph != null && char.referenceGlyph.path.toPathData() !== "" && char.referenceGlyph.unicode != null &&
-                    char.produceGlyph != null && char.produceGlyph.path.toPathData() !== "" && char.produceGlyph.unicode != null
+            char.referenceGlyph.path.commands.isNotEmpty() && char.referenceGlyph.unicode != null &&
+                    char.produceGlyph.path.commands.isNotEmpty() && char.produceGlyph.unicode != null
         }.toTypedArray()
-    }
-
-    fun xx(){
-        println(getMatchedCharList(referenceFont, produceFont)[130].referenceGlyph.unicode)
     }
 
     /**
@@ -103,7 +100,7 @@ data class Project(
      * 所以要統一所有字串長度
      * **此值必須大於最長字形輪廓線嘅字串長度**
      */
-    private val glyphPathStringLength = 16384
+    private val glyphPathCommandLength = 256
 
     /**
      * 每次訓練數量
@@ -116,32 +113,56 @@ data class Project(
     /**
      *
      * */
-    data class TrainingTensorSet(
-            val inputs: Tensor,
-            val labels: Tensor,
-            val inputMax: Tensor,
-            val inputMin: Tensor,
-            val labelMax: Tensor,
-            val labelMin: Tensor
-    )
+    data class TrainingTensorSet(val inputs: Tensor, val labels: Tensor)
+
+    private val dataShape: Array<Int> = arrayOf(3, glyphPathCommandLength, 12)
+
+    private val dataConverter = DataConverter(dataShape)
 
     /**
      *
      * */
-    private fun getTrainData(referenceFont: Font, produceFont: Font, numberOfDataForTrain: Int? = null):Array<TrainingSet> {
-        //匯入 要參照字形嘅檔 同 要產生字體嘅檔
-        val trainingData = getMatchedCharList(referenceFont, produceFont)
-        //
-        val drawedNumbers = Random.drawNumbersOfRange(0, trainingData.size, numberOfDataForTrain?:trainingData.size)
-        println(drawedNumbers.toString())
-        //
+    private fun Array<GlyphContrast>.getTrainData(indexs: Array<Int>, onGet: (Array<TrainingSet>)-> Unit){
         var temporaryTrainingDate = ArrayList<TrainingSet>()
-        drawedNumbers.forEach{index ->
-            console.log("index ${index}")
-            val referenceChar = trainingData.getOrNull(index)?:return@forEach
+        indexs.forEach{index ->
+            val referenceChar = this.getOrNull(index)?:return@forEach
+            //收集每一定數量就return出去訓練住先
+            val datalength = 200// trainingData.length
+            this.forEachIndexed{i, produceChar ->
+                temporaryTrainingDate.add(TrainingSet(
+                        arrayOf(
+                                produceChar.referenceGlyph,
+                                referenceChar.referenceGlyph,
+                                referenceChar.produceGlyph
+                        ),
+                        arrayOf(
+                                produceChar.produceGlyph,
+                                referenceChar.referenceGlyph,
+                                referenceChar.produceGlyph
+                        )
+                ))
+                if((i%numberOfTrainingSessions) == (numberOfTrainingSessions-1) || i >= datalength-1){
+                    console.log("return"+temporaryTrainingDate.size)
+                    //return出去訓練住先
+                    onGet(temporaryTrainingDate.toTypedArray())
+                    //清空
+                    temporaryTrainingDate = ArrayList()
+                }
+            }
+            console.log(index.toString()+"done")
+        }
+    }
+
+    /**
+     *
+     * */
+    private fun Array<GlyphContrast>.getTrainData(indexs: Array<Int>): Array<TrainingSet> {
+        var temporaryTrainingDate = ArrayList<TrainingSet>()
+        indexs.forEach{index ->
+            val referenceChar = this.getOrNull(index)?:return@forEach
             //收集每一定數量就return出去訓練住先
             val datalength = 100// trainingData.length
-            trainingData.forEachIndexed{i, produceChar ->
+            this.forEachIndexed{i, produceChar ->
                 temporaryTrainingDate.add(TrainingSet(
                         arrayOf(
                                 produceChar.referenceGlyph,
@@ -165,64 +186,27 @@ data class Project(
             console.log(index.toString()+"done")
         }
         return temporaryTrainingDate.toTypedArray()
-        /*drawedNumbers.forEach{index ->
-            console.log("index ${index}")
-            val referenceChar = trainingData.getOrNull(index)?:return@forEach
-            //收集每一定數量就return出去訓練住先
-            val datalength = 100// trainingData.length
-            var temporaryTrainingDate = ArrayList<TrainingSet>()
-            trainingData.forEachIndexed{i, produceChar ->
-                temporaryTrainingDate.add(TrainingSet(
-                        arrayOf(
-                                produceChar.referenceGlyph,
-                                referenceChar.referenceGlyph,
-                                referenceChar.produceGlyph
-                        ),
-                        arrayOf(
-                                produceChar.produceGlyph,
-                                referenceChar.referenceGlyph,
-                                referenceChar.produceGlyph
-                        )
-                ))
-                if((i%numberOfTrainingSessions) == (numberOfTrainingSessions-1) || i >= datalength-1){
-                    println("${(i%numberOfTrainingSessions) == (numberOfTrainingSessions-1)} ${i == datalength-1}")
-                    console.log("return"+temporaryTrainingDate.size)
-                    //return出去訓練住先
-                    onGet(temporaryTrainingDate.toTypedArray())
-                    //清空
-                    temporaryTrainingDate = ArrayList()
-                }
-            }
-            console.log(index.toString()+"done")
-        }*/
     }
 
-    /**
-     *
-     * */
-    private fun String.uniformLength(): Array<Int>{
-        val charArray = ArrayList<Int>()
-        var i = 0
-        while(i < glyphPathStringLength ){
-            if(this.getOrNull(i) != null){
-                charArray.add(this.codePointAt(i)?:0)
-            }else{
-                charArray.add(0)
-            }
-            i++
-        }
-        return charArray.toTypedArray()
+    private fun Array<GlyphContrast>.getTrainData(numberOfDataForTrain: Int? = null): Array<TrainingSet> {
+        return getTrainData(Random.drawNumbersOfRange(
+                0, this.size,
+                numberOfDataForTrain?:this.size
+        ))
     }
 
-    /**
-     *
-     * */
-    private fun Array<Int>.ununiformLength(): String{
-        var string = ""
-        for(i in 0 until this.size){
-            string += String.fromCharPoint(this[i])
+    private fun Array<GlyphContrast>.getTrainDataByUnicode(unicodes: Array<Int>): Array<TrainingSet> {
+        val indexs = ArrayList<Int>()
+        this.forEachIndexed { index, glyphContrast ->
+            if(glyphContrast.referenceGlyph.unicode?.equals(unicodes) == true){
+                indexs.add(index)
+            }
         }
-        return string
+        return getTrainData(indexs.toTypedArray())
+    }
+
+    private fun Array<GlyphContrast>.getTrainDataByUnicode(vararg unicodes: Int): Array<TrainingSet> {
+        return getTrainDataByUnicode(unicodes.toTypedArray())
     }
 
     /**
@@ -236,37 +220,22 @@ data class Project(
             // 將資料轉成tensor
             val inputs = data.map{d ->
                 arrayOf(
-                       d.x[0].path.toPathData().uniformLength(),
-                       d.x[1].path.toPathData().uniformLength(),
-                       d.x[2].path.toPathData().uniformLength()
+                       d.x[0].path.commands,
+                       d.x[1].path.commands,
+                       d.x[2].path.commands
                 )
             }.toTypedArray()
             val labels = data.map{d ->
                 arrayOf(
-                       d.y[0].path.toPathData().uniformLength(),
-                       d.y[1].path.toPathData().uniformLength(),
-                       d.y[2].path.toPathData().uniformLength()
+                       d.y[0].path.commands,
+                       d.y[1].path.commands,
+                       d.y[2].path.commands
                 )
             }.toTypedArray()
-            val inputTensor = tf.tensor3d(inputs, arrayOf(inputs.size, 3, glyphPathStringLength))!!
-            val labelTensor = tf.tensor3d(labels, arrayOf(labels.size, 3, glyphPathStringLength))!!
-            //取最大值與最小值
-            val inputMax = inputTensor.max()
-            val inputMin = inputTensor.min()
-            val labelMax = labelTensor.max()
-            val labelMin = labelTensor.min()
-            //正規化 將 (tensor內的資料-最小值)/(最大值-最小值)) 出來的結果在0-1之間
-            val normalizedInputs = inputTensor.sub(inputMin).div(inputMax.sub(inputMin))
-            val normalizedLabels = labelTensor.sub(labelMin).div(labelMax.sub(labelMin))
+            val inputTensor = dataConverter.encodeTensor(inputs)
+            val labelTensor = dataConverter.encodeTensor(labels)
 
-            return TrainingTensorSet(
-                    normalizedInputs,
-                    normalizedLabels,
-                    inputMax,
-                    inputMin,
-                    labelMax,
-                    labelMin
-            )
+            return TrainingTensorSet(inputTensor, labelTensor)
         })
     }
 
@@ -276,9 +245,34 @@ data class Project(
     private fun newModel(): LayersModel {
         // Create a sequential model
         val model = tf.sequential()
+        model.add(tf.layers.dropout(jsObject {
+            rate = 0.2
+            inputShape = dataShape
+        })) //# dropout on the inputs
+        //# this helps mimic noise or missing data
+        model.add(tf.layers.dense(jsObject {
+            units = 128
+            inputDim = 784
+            activation = "relu"
+        }))
+        model.add(tf.layers.dropout(jsObject {
+            rate = 10
+        }))
+        model.add(tf.layers.dense(jsObject {
+            units = 128
+            activation = "tanh"
+        }))
+        model.add(tf.layers.dropout(jsObject {
+            rate = 10
+        }))
+        model.add(tf.layers.dense(jsObject {
+            units = dataShape.last()
+            activation = "sigmoid"
+        }))
+        /*
         // Add a single hidden layer
         model.add(tf.layers.dense(jsObject{
-            inputShape = arrayOf(3, glyphPathStringLength)
+            inputShape = dataShape
             units = 1
             useBias = true
         }))
@@ -292,15 +286,16 @@ data class Project(
         }))
         // Add an output layer
         model.add(tf.layers.dense(jsObject{
-            units = glyphPathStringLength
+            units = dataShape.last()
             useBias = true
-        }))
+        }))*/
         // 加入最佳化的求解器、用MSE做為損失計算方式
         model.compile(jsObject{
             optimizer = tf.train.adam()
             loss = "meanSquaredError"
             metrics = arrayOf("mse")
         })
+
         return model
     }
 
@@ -312,7 +307,7 @@ data class Project(
     private var model: LayersModel = {
         if(isInitModel){
             GlobalScope.launch {
-                model = tf.loadLayersModel("indexeddb://project-model-${projectName}").await()
+                //model = tf.loadLayersModel("indexeddb://project-model-${projectName}").await()
             }
         }
         newModel()
@@ -321,12 +316,12 @@ data class Project(
     /**
      * 每次訓練的樣本數
      * */
-    private val batchSize = 32
+    private val batchSize = 320
 
     /**
      * 訓練多少代
      * */
-    private val epochs = 30
+    private val epochs = 50
 
     /**
      * 訓練的程式碼
@@ -348,40 +343,46 @@ data class Project(
     }
 
     fun getPrediction(normalizationData: TrainingTensorSet): Array<Array<dynamic>> {
-        val inputMax = normalizationData.inputMax
-        val inputMin = normalizationData.inputMin
-        val labelMin = normalizationData.labelMin
-        val labelMax = normalizationData.labelMax
+        val inputMax = normalizationData.inputs.max()
+        val inputMin = normalizationData.inputs.min()
+        val labelMax = normalizationData.labels.max()
+        val labelMin = normalizationData.labels.min()
         return tf.tidy(fun(): Array<Array<dynamic>>{
             //tf.linspace(start_value,end_value,number_of_value)
             val input_x = tf.linspace(0, 1, 100)
             //將產生的資料轉成[num_examples, num_features_per_example]
             val preds = model.predict(normalizationData.inputs)
+            /*
             //轉回原本的數= 數字*(最大值-最小值)+最小值
             val toOrignalX = input_x.mul(inputMax.sub(inputMin)).add(inputMin)
             val toOrignalY = preds.mul(labelMax.sub(labelMin)).add(labelMin)
             //tensor.dataSync() return data from tensor to array
             return arrayOf(toOrignalX.dataSync(), toOrignalY.dataSync())
+            */
+            //轉回原本的數= 數字*(最大值-最小值)+最小值
+            val toOrignalX = dataConverter.decodeTensor(input_x)
+            val toOrignalY = dataConverter.decodeTensor(preds)
+            //tensor.dataSync() return data from tensor to array
+            return arrayOf(toOrignalX, toOrignalY)
         })
     }
 
-    fun trainModel(){
-        GlobalScope.launch {
-            val data = getTrainData(referenceFont, produceFont,1)
-            val tensorData = convertToTensor(data)
-            trainModel(model, tensorData.inputs, tensorData.labels).await()
-            println(JSON.stringify(getPrediction(tensorData)))
-        }
+    fun initModel(){
+        model = newModel()
     }
 
-    fun saveModel(){
-        model.save("indexeddb://project-model-${projectName}")
+    suspend fun trainModel(){
+        val data = getMatchedCharList(referenceFont, produceFont).getTrainData(arrayOf(268))
+        val tensorData = convertToTensor(data)
+        trainModel(model, tensorData.inputs, tensorData.labels).await()
     }
 
-    fun loadModel(){
-        GlobalScope.launch {
-            model = tf.loadLayersModel("indexeddb://project-model-${projectName}").await()
-        }
+    suspend fun saveModel(){
+        model.save("indexeddb://project-model-${projectName}").await()
+    }
+
+    suspend fun loadModel(){
+        model = tf.loadLayersModel("indexeddb://project-model-${projectName}").await()
     }
 
     /**
@@ -410,15 +411,18 @@ data class Project(
      *
      */
     private fun LayersModel.produceGlyph(produceChar: Path, referenceChar: Path, referenceGlyph: Path): Path{
-        val input = arrayOf(
-                produceChar.toPathData().uniformLength(),
-                referenceChar.toPathData().uniformLength(),
-                referenceGlyph.toPathData().uniformLength()
-        )
-        val output = this.predict(tf.tensor(input, arrayOf(3, glyphPathStringLength))!!).dataSync()
-        //val orignal = output.mul(inputMax.sub(inputMin)).add(inputMin)
-        val produceGlyphSvgPath = (Object.values(output)[0] as Array<Int>).ununiformLength()
-        return Path().setCommands(produceGlyphSvgPath)
+        val input = arrayOf(arrayOf(
+                    produceChar.commands,
+                    referenceChar.commands,
+                    referenceGlyph.commands
+        ))
+        val inputTensor = dataConverter.encodeTensor(input)
+        val outputTensor = this.predict(inputTensor)
+        val output = dataConverter.decodeTensor(outputTensor)
+        val produceGlyphSvgPath = output[0][0]
+        val path = Path()
+        path.commands = produceGlyphSvgPath
+        return path
     }
 
     /**
@@ -435,9 +439,12 @@ data class Project(
      *
      * */
     fun produceGlyph(produceGlyphUnicode: Int, referenceGlyphUnicode: Int): Glyph?{
-        val produceChar = referenceFont.getGlyphByUnicode(produceGlyphUnicode)?:return null
-        val referenceChar = referenceFont.getGlyphByUnicode(referenceGlyphUnicode)?:return null
-        val referenceGlyph = produceFont.getGlyphByUnicode(referenceGlyphUnicode)?:return null
+        val produceChar = referenceFont.getOrNullGlyphByUnicode(produceGlyphUnicode)?:return null
+        println(produceChar.path.toPathData())
+        val referenceChar = referenceFont.getOrNullGlyphByUnicode(referenceGlyphUnicode)?:return null
+        println(referenceChar.path.toPathData())
+        val referenceGlyph = produceFont.getOrNullGlyphByUnicode(referenceGlyphUnicode)?:return null
+        println(referenceGlyph.path.toPathData())
         return model.produceGlyph(produceChar, referenceChar, referenceGlyph)
     }
 
@@ -447,5 +454,15 @@ data class Project(
 
     init {
 
+    }
+}
+
+
+fun RBuilder.project(project: Project){
+    div{
+        button { +"XXX" }
+        for(glyph in project.produceFont.glyphs.glyphs.toArray()){
+            glyph(glyph)
+        }
     }
 }

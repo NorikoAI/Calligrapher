@@ -13,54 +13,159 @@ import react.*
 import react.dom.*
 import logo.*
 import org.w3c.dom.HTMLCanvasElement
+import react.infinite.grid.InfiniteGrid
 import ticker.*
 import kotlin.js.Json
+import kotlin.math.roundToInt
 import kotlin.random.Random
 @JsModule("src/font/SourceHanSans_v1.001/SourceHanSansTC-Regular.otf") external val sourceHanSansTCUrl: String
 @JsModule("src/font/HanWang/WCL-01.ttf") external val wcl01Url: String
+
+
+
+class P : RComponent<RProps, RState>() {
+    override fun RBuilder.render() {
+        var i = 0
+        div("App-header") {
+            h2 {
+                +"Welcome to React with Kotlin ${i}"
+            }
+            button {
+                attrs.onClickFunction = fun(e){
+                    i++
+                    forceUpdate()
+
+                }
+                +"++"
+            }
+        }
+    }
+}
+
+fun RBuilder.p() = child(P::class) {
+    div{
+        +"XXX4"
+    }
+}
+
 
 
 var project: Project = Project("", wcl01Url)
 
 class App : RComponent<RProps, RState>() {
     override fun RBuilder.render() {
+        //p()
         div("App-header") {
             logo()
             h2 {
                 +"Welcome to React with Kotlin"
             }
         }
+        p("App-intro") {
+            +"To get started, edit "
+            code { +"app/App.kt" }
+            +" and save to reload."
+        }
+        p("App-ticker") {
+            ticker()
+        }
+        project(project)
+
+
+
+        button {
+            attrs.onClickFunction = fun(event){
+                println(JSON.stringify(project.produceGlyph(945, 945)?.path?.toPathData()))
+            }
+            +"G"
+        }
         button {
             attrs.onClickFunction = fun(event){
                 GlobalScope.launch {
+                    val inputShape = arrayOf(1, 2, 1)
+                    val labelsShape = arrayOf(1, 2, 1)
+                    // Create a sequential model
                     val model = tf.sequential()
+                    // Add a single hidden layer
                     model.add(tf.layers.dense(jsObject{
-                        inputShape = arrayOf(2, 2)
-                        units = 1
+                        this.inputShape = inputShape
+                        units = 100
                         useBias = true
                     }))
                     model.add(tf.layers.dense(jsObject{
-                        units = 30
-                        activation = "sigmoid"
-                    }))
-                    model.add(tf.layers.dense(jsObject{
-                        units = 30
+                        units = 100
                         activation = "sigmoid"
                     }))
                     // Add an output layer
                     model.add(tf.layers.dense(jsObject{
-                        units = 2
+                        units = inputShape.last()
                         useBias = true
                     }))
+                    // 加入最佳化的求解器、用MSE做為損失計算方式
                     model.compile(jsObject{
                         optimizer = tf.train.adam()
                         loss = "meanSquaredError"
                         metrics = arrayOf("mse")
                     })
                     val _model: LayersModel = model
-                    val inputs = arrayOf(arrayOf(arrayOf(1, 2), arrayOf(3, 4)))
+                    println("1")
+                    val inputs = arrayOf(arrayOf(arrayOf(arrayOf(1), arrayOf(3))))
+                    val inputsTensor = tf.tensor4d(inputs)!!
+                    val labels = arrayOf(arrayOf(arrayOf(arrayOf(1), arrayOf(3))))
+                    val labelsTensor = tf.tensor4d(labels)!!
+                    println("2")
+                    _model.fit(inputsTensor, labelsTensor, jsObject {
+                        this.batchSize = 32
+                        this.epochs = 50
+                        shuffle = true
+                        callbacks = tfvis.show.fitCallbacks(
+                                jsObject{ name = "Training Performance"},
+                                arrayOf("loss", "mse"),
+                                jsObject{
+                                    height = 200
+                                    callbacks = arrayOf("onEpochEnd")
+                                }
+                        )
+                    }).await()
+                    println(JSON.stringify(model.predict(inputsTensor).array().await()))
+                }
+            }
+            +"Test 0"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                GlobalScope.launch {
+                    val inputShape = arrayOf(2, 1)
+                    val labelsShape = arrayOf(2, 1)
+                    val model = tf.sequential()
+                    model.add(tf.layers.simpleRNN(jsObject{
+                        units = 1
+                        recurrentInitializer = "glorotNormal"
+                        this.inputShape = inputShape
+                    }))
+                    model.add(tf.layers.repeatVector(jsObject{
+                        n = labelsShape[0]
+                    }))
+                    model.add(tf.layers.simpleRNN(jsObject{
+                        units = 1
+                        recurrentInitializer = "glorotNormal"
+                        returnSequences = true
+                    }))
+                    model.add(tf.layers.timeDistributed(jsObject{
+                        layer = tf.layers.dense(jsObject{units = labelsShape.last()})
+                    }))
+                    model.add(tf.layers.activation(jsObject{
+                        activation = "softmax"
+                    }))
+                    model.compile(jsObject{
+                        loss = "binaryCrossentropy"
+                        optimizer = "adam"
+                        metrics = arrayOf("accuracy")
+                    })
+                    val _model: LayersModel = model
+                    val inputs = arrayOf(arrayOf(arrayOf(1), arrayOf(1)))
                     val inputsTensor = tf.tensor3d(inputs)!!
-                    val labels = arrayOf(arrayOf(arrayOf(1, 2), arrayOf(3, 4)))
+                    val labels = arrayOf(arrayOf(arrayOf(20), arrayOf(30)))
                     val labelsTensor = tf.tensor3d(labels)!!
                     _model.fit(inputsTensor, labelsTensor, jsObject {
                         this.batchSize = 32
@@ -75,47 +180,10 @@ class App : RComponent<RProps, RState>() {
                                 }
                         )
                     }).await()
-                    model.predict(inputsTensor)
+                    println("A: "+JSON.stringify(model.predict(inputsTensor).array().await()))
                 }
             }
-            +"Test"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                project.xx()
-            }
-            +"xx"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                project.trainModel()
-            }
-            +"Train Model"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                project.saveModel()
-            }
-            +"Save Model"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                project.loadModel()
-            }
-            +"Load Model"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                println(project.produceGlyph(215, 945))
-            }
-            +"G"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                console.log("Download Model")
-                //model?.save("downloads://my-model")
-            }
-            +"Download Model"
+            +"Test 1"
         }
         button {
             attrs.onClickFunction = fun(event){
@@ -142,16 +210,67 @@ class App : RComponent<RProps, RState>() {
                 console.log(JSON.stringify(aGlyph))
 
             }
-            +"Download ModelXXXX"
+            +"Test 3"
         }
-        p("App-intro") {
-            +"To get started, edit "
-            code { +"app/App.kt" }
-            +" and save to reload."
+        button {
+            attrs.onClickFunction = fun(event){
+                val max = 1024
+                val min = -1024
+                println(5.99*(max-min)+min)
+            }
+            +"Test 4"
         }
-        p("App-ticker") {
-            ticker()
+        button {
+            attrs.onClickFunction = fun(event){
+
+            }
+            +"Test"
         }
+        button {
+            attrs.onClickFunction = fun(event){
+                project.initModel()
+                println("Init Model Done")
+            }
+            +"Init Model"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                GlobalScope.launch {
+                    project.trainModel()
+                    println("Train Model Done")
+                }
+            }
+            +"Train Model"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                GlobalScope.launch {
+                    project.saveModel()
+                    println("Save Model Done")
+                }
+            }
+            +"Save Model"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                GlobalScope.launch {
+                    project.loadModel()
+                    println("Load Model Done")
+                }
+            }
+            +"Load Model"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                console.log("Download Model")
+                //model?.save("downloads://my-model")
+            }
+            +"Download Model"
+        }
+
+
+
+
     }
 }
 

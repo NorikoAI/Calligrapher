@@ -15,6 +15,20 @@ inline fun jsObject(init: dynamic.() -> Unit): Json {
     return obj
 }
 
+fun <Value> Value.equals(values: Array<Value>): Boolean{
+    values.forEach { value -> if(value == this){
+        return@equals true
+    }}
+    return false
+}
+
+fun <Value> Value.equals(vararg values: Value): Boolean{
+    values.forEach { value -> if(value == this){
+        return@equals true
+    }}
+    return false
+}
+
 /**
  *
  * */

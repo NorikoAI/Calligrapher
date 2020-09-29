@@ -5,6 +5,7 @@ import kotlinx.browser.*
 
 interface TickerProps : RProps {
     var startFrom: Int
+    var sss: String
 }
 
 interface TickerState : RState {
@@ -30,10 +31,45 @@ class Ticker(props: TickerProps) : RComponent<TickerProps, TickerState>(props) {
     }
 
     override fun RBuilder.render() {
-        +"This app has been running for ${state.secondsElapsed} seconds."
+        +"This app has been running for ${state.secondsElapsed} seconds.${props.sss}"
     }
 }
 
 fun RBuilder.ticker(startFrom: Int = 0) = child(Ticker::class) {
     attrs.startFrom = startFrom
+    attrs.sss = "asdf"
 }
+
+
+/*
+class Ticker(props: TickerProps) : MyRComponent<TickerProps, TickerState>(props) {
+    override fun TickerState.init(props: TickerProps) {
+        secondsElapsed = props.startFrom
+    }
+
+    var timerID: Int? = null
+
+    override fun componentDidMount() {
+
+    }
+
+    override fun componentWillUnmount() {
+
+    }
+
+    override fun onVisible() {
+        timerID = window.setInterval({
+            // actually, the operation is performed on a state's copy, so it stays effectively immutable
+            setState { secondsElapsed += 1 }
+        }, 1000)
+    }
+
+    override fun onInvisible() {
+        window.clearInterval(timerID!!)
+    }
+
+    override fun RBuilder.myRender() {
+        +"This app has been running for ${state.secondsElapsed} seconds."
+    }
+}
+*/

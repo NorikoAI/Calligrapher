@@ -1,5 +1,6 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
+import kotlinext.js.Object
 import kotlin.js.Json
 import org.khronos.webgl.*
 import org.w3c.dom.*
@@ -44,13 +45,13 @@ open external class Tensor{
 
     fun bufferSync(): TensorBuffer
 
-    fun array(): Promise<DoubleArray>
+    open fun array(): Promise<Array<dynamic>>
 
-    fun arraySync(): Array<Number>
+    open fun arraySync(): Array<dynamic>
 
-    fun data(): Promise<Array<dynamic>>
+    fun data(): Promise<Object>
 
-    fun dataSync(): Array<dynamic>
+    fun dataSync(): Object
 
     fun dispose()
 
@@ -425,15 +426,40 @@ open external class Scalar: Tensor
 
 open external class Tensor1D: Tensor
 
-open external class Tensor2D: Tensor
+open external class Tensor2D: Tensor{
 
-open external class Tensor3D: Tensor
+    override fun array(): Promise<Array<Array<dynamic>>>
 
-open external class Tensor4D: Tensor
+    override fun arraySync(): Array<Array<dynamic>>
+}
 
-open external class Tensor5D: Tensor
+open external class Tensor3D: Tensor{
 
-open external class Tensor6D: Tensor
+    override fun array(): Promise<Array<Array<Array<dynamic>>>>
+
+    override fun arraySync(): Array<Array<Array<dynamic>>>
+}
+
+open external class Tensor4D: Tensor{
+
+    override fun array(): Promise<Array<Array<Array<Array<dynamic>>>>>
+
+    override fun arraySync(): Array<Array<Array<Array<dynamic>>>>
+}
+
+open external class Tensor5D: Tensor{
+
+    override fun array(): Promise<Array<Array<Array<Array<Array<dynamic>>>>>>
+
+    override fun arraySync(): Array<Array<Array<Array<Array<dynamic>>>>>
+}
+
+open external class Tensor6D: Tensor{
+
+    override fun array(): Promise<Array<Array<Array<Array<Array<Array<dynamic>>>>>>>
+
+    override fun arraySync(): Array<Array<Array<Array<Array<Array<dynamic>>>>>>
+}
 
 open external class TensorBuffer{
     fun set(value: Array<dynamic>, vararg locs: Int): TensorBuffer
@@ -1174,7 +1200,7 @@ external object Tensorflow{
 
     //Tensors / Creation
 
-    fun tensor(values: Array<*>, shape: Array<Int> = definedExternally, dtype: String = definedExternally): Tensor?
+    fun tensor(values: Array<*>, shape: Array<Int> = definedExternally, dtype: String = definedExternally): Tensor
 
     fun scalar(value: Number, dtype: String = definedExternally): Scalar
 

@@ -2,7 +2,12 @@ package org.sourcekey.NorikoAI.Calligrapher
 
 
 import kotlinext.js.*
+import kotlinx.html.SVG
+import logo.kotlinLogo
+import logo.reactLogo
 import org.w3c.dom.RenderingContext
+import react.RBuilder
+import react.dom.*
 import kotlin.js.Promise
 import kotlin.js.Json
 
