@@ -251,19 +251,19 @@ data class Project(
         })) //# dropout on the inputs
         //# this helps mimic noise or missing data
         model.add(tf.layers.dense(jsObject {
-            units = 128
-            inputDim = 784
+            units = 2048 //128
+            inputDim = 2048 //784
             activation = "relu"
         }))
         model.add(tf.layers.dropout(jsObject {
-            rate = 10
+            rate = 10 //0.5
         }))
         model.add(tf.layers.dense(jsObject {
             units = 128
             activation = "tanh"
         }))
         model.add(tf.layers.dropout(jsObject {
-            rate = 10
+            rate = 10 //0.5
         }))
         model.add(tf.layers.dense(jsObject {
             units = dataShape.last()
@@ -454,15 +454,5 @@ data class Project(
 
     init {
 
-    }
-}
-
-
-fun RBuilder.project(project: Project){
-    div{
-        button { +"XXX" }
-        for(glyph in project.produceFont.glyphs.glyphs.toArray()){
-            glyph(glyph)
-        }
     }
 }

@@ -285,3 +285,17 @@ fun OpentypeJS.Path.setCommands(svgPathData: String): OpentypeJS.Path{
     this.setCommands(svgPathElements, typeCharLocations)
     return this
 }
+
+fun RBuilder.glyph(glyph: OpentypeJS.Glyph){
+    div("glyph") {
+        div {
+            +glyph.unicode.toString()
+        }
+        svg {
+            +glyph.path.toSVG()
+        }
+        div {
+            +glyph.unicode.toString()
+        }
+    }
+}
