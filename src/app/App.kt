@@ -30,6 +30,7 @@ var theme = null
 var project: Project = Project("", wcl01Url)
 
 class App : RComponent<RProps, RState>() {
+    /*
     var timerID: Int? = null
 
     override fun componentDidMount() {
@@ -42,7 +43,7 @@ class App : RComponent<RProps, RState>() {
     override fun componentWillUnmount() {
         window.clearInterval(timerID!!)
     }
-
+*/
     override fun RBuilder.render() {
         styledDiv {
             css {
@@ -55,7 +56,9 @@ class App : RComponent<RProps, RState>() {
             topBar()
         }
         styledDiv{ css { height = 7.vh } }
-        charGrid(project.produceFont.glyphs.glyphs.toArray())
+        charGrid(fun(): Array<Glyph>{
+            return project.produceFont.glyphs.glyphs.toArray()
+        })
     }
 }
 

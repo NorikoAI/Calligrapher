@@ -79,11 +79,11 @@ external object OpentypeJS{
 
         fun getBoundingBox(): BoundingBox
 
-        fun draw(ctx: RenderingContext, text: String, x: Int, y: Int, fontSize: Int, options: Json)
+        fun draw(ctx: RenderingContext, x: Int, y: Int, fontSize: Int)
 
-        fun drawPoints(ctx: RenderingContext, text: String, x: Int, y: Int, fontSize: Int, options: Json)
+        fun drawPoints(ctx: RenderingContext, x: Int, y: Int, fontSize: Int)
 
-        fun drawMetrics(ctx: RenderingContext, text: String, x: Int, y: Int, fontSize: Int, options: Json)
+        fun drawMetrics(ctx: RenderingContext, x: Int, y: Int, fontSize: Int)
     }
 
     open class Font(options: Json){

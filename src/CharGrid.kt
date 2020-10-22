@@ -1,26 +1,41 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
-import kotlinext.js.jsObject
+import kotlinx.browser.window
 import kotlinx.css.*
+import kotlinx.html.weekInput
+import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.RenderingContext
 import react.*
-import react.dom.div
-import react.dom.img
-import react.dom.jsStyle
-import react.dom.svg
+import react.dom.*
 import react.infinitegrid.GridLayout
 import styled.css
+import styled.styledCanvas
 import styled.styledDiv
 
 
-external interface CharProps : RProps {
-    var char: OpentypeJS.Glyph
+interface CharProps : RProps {
+    var groupKey: Int
+    var key: Int
+    var unicode: Int
+    var onGetGlyph: (Int, (OpentypeJS.Glyph?)->Unit)->Unit
+    var onGetGlyphNow: (Int, (OpentypeJS.Glyph?)->Unit)->Unit
 }
 
-fun RBuilder.char(unicode: Int, char: OpentypeJS.Glyph?): RClass<CharProps> {
+class CharState: RState{
+    var glyph: OpentypeJS.Glyph? = null
+    set(value) {
+        field = value?:field
+    }
+}
+/*
+fun RBuilder.char(groupKey: Int, key: Int, unicode: Int, char: OpentypeJS.Glyph?): RClass<CharProps> {
+    //zconsole.log(char)
     val item = rFunction<CharProps>("Char") { props ->
+        props.groupKey = groupKey
+        props.key = key
         styledDiv{
             css{
-                if(char != null){ background = "#EEE" }else{ background = "#FEE" }
+                if(char != null){ background = "#FEFEFE" }else{ background = "#FFF7F7" }
                 width = 10.vh
                 height = 10.vh
                 overflow = Overflow.hidden
@@ -39,22 +54,172 @@ fun RBuilder.char(unicode: Int, char: OpentypeJS.Glyph?): RClass<CharProps> {
     item.invoke{}
     return item
 }
+*/
+/*
+private val char = functionalComponent<CharProps> { props ->
+    styledDiv{
+        css{
+            if(props.glyph != null){ background = "#FEFEFE" }else{ background = "#FFF7F7" }
+            width = 10.vh
+            height = 10.vh
+            overflow = Overflow.hidden
+        }
+        div {
+            +"U+${props.unicode.toString(16).toUpperCase()}"
+        }
+        svg {
+            attrs.jsStyle {
+                width = "250px"
+            }
+            +(props.glyph?.path?.toSVG()?:"")
+        }
+    }
+}*/
+private class Char: RComponent<CharProps, CharState>() {
+
+    override fun CharState.init() {
+        glyph = null
+    }
+
+    var timerID: Int? = null
+
+    override fun componentDidMount() {
+        //
+        props.onGetGlyphNow(props.unicode, fun(glyph: OpentypeJS.Glyph?){ setState{ this.glyph = glyph } })
+        //
+        timerID = window.setInterval({
+            props.onGetGlyph(props.unicode, fun(glyph: OpentypeJS.Glyph?){ setState{ this.glyph = glyph } })
+        }, 5000)
+    }
+
+    override fun componentWillUnmount() {
+        window.clearInterval(timerID!!)
+    }
+
+    override fun RBuilder.render() {
+        styledDiv{
+            css{
+                if(state.glyph != null){ background = "#FAFAFA" }else{ background = "#EEE" } //"#FFF7F7"
+                width = 10.vh
+                //height = 10.vh
+                overflow = Overflow.hidden
+            }
+            div {
+                +"U+${props.unicode.toString(16).toUpperCase()}"
+            }
+            styledCanvas {
+                attrs{
+                    width = "200"
+                    height = "200"
+                }
+                css {
+                    width = 10.vh
+                    height = 10.vh
+                }
+                ref {
+                    state.glyph?:return@ref
+                    val canvas = it as? HTMLCanvasElement?:return@ref
+                    val ctx = canvas.getContext("2d")?:return@ref
+                    ctx.asDynamic().clearRect(0, 0, canvas.width, canvas.height)
+                    val x = 40
+                    val y = 150
+                    val fontSize = 120
+                    state.glyph?.draw(ctx, x, y, fontSize)
+                    //state.glyph?.drawPoints(ctx, x, y, fontSize)
+                    state.glyph?.drawMetrics(ctx, x, y, fontSize)
+                }
+            }
+        }
+    }
+
+}
+
+private fun RBuilder.char(
+        groupKey: Int, unicode: Int,
+        onGetGlyph: (Int, (OpentypeJS.Glyph?)->Unit)->Unit,
+        onGetGlyphNow: (Int, (OpentypeJS.Glyph?)->Unit)->Unit
+){
+    child(Char::class){
+        attrs {
+            this.groupKey = groupKey
+            this.unicode = unicode
+            this.onGetGlyph = onGetGlyph
+            this.onGetGlyphNow = onGetGlyphNow
+        }
+    }
+}
 
 interface CharGridProps : RProps {
-    var chars: ArrayList<OpentypeJS.Glyph>
+    var onGetChars: ()->ArrayList<OpentypeJS.Glyph>
 }
 
 interface CharGridState : RState {
-    var showingChars: ArrayList<RClass<CharProps>>
+    var showingUnicodes: ArrayList<Int>
 }
 
-class CharGrid : RComponent<CharGridProps, CharGridState>() {
+private class CharGrid : RComponent<CharGridProps, CharGridState>() {
     override fun CharGridState.init() {
-        showingChars = ArrayList()
+        showingUnicodes = ArrayList()
     }
 
     override fun componentDidMount() {
 
+    }
+
+    private class OnGetGlyphRequest(val unicode: Int, val onGet: (OpentypeJS.Glyph?)->Unit)
+
+    private var onGetGlyphRequests = ArrayList<OnGetGlyphRequest>()
+
+    private var processOnGetGlyphRequestsTimer: Int? = null
+
+    private val processOnGetGlyphRequests = fun(){
+        //
+        onGetGlyphRequests.sortBy{ it.unicode }
+        //
+        val requests = onGetGlyphRequests.filterIndexed(fun(index, onGetGlyphRequest): Boolean{
+            val frontElement = onGetGlyphRequests.getOrNull(index-1)?:return true
+            return frontElement.unicode != onGetGlyphRequest.unicode
+        })
+        //
+        var i = 0
+        var j = 0
+        while (i < requests.size){
+            val onGetGlyphRequest = requests.getOrNull(i)?:break
+            val char = props.onGetChars().getOrNull(j)?:break
+            val unicodeI = onGetGlyphRequest.unicode
+            val unicodeJ = char.unicode?:0
+            if(unicodeI == unicodeJ){
+                onGetGlyphRequest.onGet(char)
+                i++
+                j++
+            }else if(unicodeI < unicodeJ){
+                onGetGlyphRequest.onGet(null)
+                i++
+            }else{
+                j++
+            }
+        }
+        while (i < requests.size){
+            val onGetGlyphRequest = requests.getOrNull(i)?:break
+            onGetGlyphRequest.onGet(null)
+            i++
+        }
+        //
+        onGetGlyphRequests.clear()
+        processOnGetGlyphRequestsTimer = null
+    }
+
+    private val onGetGlyphByUnicode = fun(unicode: Int, onGet: (OpentypeJS.Glyph?)->Unit){
+        onGetGlyphRequests.add(OnGetGlyphRequest(unicode, onGet))
+        processOnGetGlyphRequestsTimer = processOnGetGlyphRequestsTimer?:window.setTimeout(
+                fun(){processOnGetGlyphRequests()}, 5000
+        )
+    }
+
+    private val onGetGlyphByUnicodeNow = fun(unicode: Int, onGet: (OpentypeJS.Glyph?)->Unit){
+        onGetGlyphRequests.add(OnGetGlyphRequest(unicode, onGet))
+        window.clearTimeout(processOnGetGlyphRequestsTimer?:0)
+        window.setTimeout(fun(){processOnGetGlyphRequests()}, 10)
     }
 
     private var processedUnicode = 0
@@ -65,48 +230,57 @@ class CharGrid : RComponent<CharGridProps, CharGridState>() {
         GridLayout{
             attrs{
                 options = jsObject {
-                    isConstantSize = true
-                    transitionDuration = 0.2
-                    useRecycle = true
-                    //isEqualSize = true
+                    this.isEqualSize = true
+                    this.isConstantSize = true
+                    this.transitionDuration = 0.2
+                    this.useRecycle = true
+                    this.useFirstRender = true
                 }
                 layoutOptions = jsObject {
-                    margin = 10
-                    align = "center"
+                    this.margin = 10
+                    this.align = "center"
                 }
                 onAppend = fun(obj: dynamic){
                     obj.startLoading()
+                    /*
+                    val groupKey = ((obj.groupKey.toString()).toIntOrNull()?:0)+1
                     val chars = props.chars
                     for (i in 0..9){
                         val char = chars.getOrNull(charsIndex)
+                        state.showingGroupKeys.add(groupKey)
+                        state.showingUnicodes.add(processedUnicode)
                         if(processedUnicode == char?.unicode){
-                            state.showingChars.add(char(processedUnicode, char))
+                            state.showingChars.add(char)
                             charsIndex++
                         }else{
-                            state.showingChars.add(char(processedUnicode, null))
+                            state.showingChars.add(null)
                         }
                         processedUnicode++
                     }
                     setState{}
+
+                     */
                 }
                 onLayoutComplete = fun(obj: dynamic){
                     js("!obj.isLayout && obj.endLoading()")
                 }
             }
-            for (char in state.showingChars){
-                char.invoke{}
+            for (i  in 0..49999){
+                char(i / 100, i, onGetGlyphByUnicode, onGetGlyphByUnicodeNow)
             }
             //+"${state.showingChars}"
         }
     }
 }
 
-fun RBuilder.charGrid(chars: ArrayList<OpentypeJS.Glyph>) = child(CharGrid::class){
-    attrs.chars = chars
+fun RBuilder.charGrid(onGetChars: ()->ArrayList<OpentypeJS.Glyph>) = child(CharGrid::class){
+    attrs.onGetChars = onGetChars
 }
 
-fun RBuilder.charGrid(chars: Array<OpentypeJS.Glyph>) = child(CharGrid::class){
-    val arrayList = ArrayList<OpentypeJS.Glyph>()
-    arrayList.addAll(chars)
-    attrs.chars = arrayList
+fun RBuilder.charGrid(onGetChars: ()->Array<OpentypeJS.Glyph>) = child(CharGrid::class){
+    attrs.onGetChars = fun(): ArrayList<OpentypeJS.Glyph>{
+        val arrayList = ArrayList<OpentypeJS.Glyph>()
+        arrayList.addAll(onGetChars())
+        return arrayList
+    }
 }
