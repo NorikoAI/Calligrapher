@@ -1,22 +1,27 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
+import ExtendedFun.drawNumbersOfRange
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import kotlinx.css.*
+import kotlinx.html.InputType
+import kotlinx.html.js.onChangeFunction
 import kotlinx.html.js.onClickFunction
 import logo.logo
+import org.w3c.dom.events.Event
 import react.RBuilder
 import react.RComponent
 import react.RProps
 import react.RState
-import react.dom.*
+import react.dom.button
+import react.dom.code
+import react.dom.defaultValue
+import react.dom.h2
 import styled.css
 import styled.styledDiv
+import styled.styledInput
 import styled.styledP
-import TensorFlowJS.*
-import OpentypeJS.*
-
+import kotlin.random.Random
 
 
 class Menu : RComponent<RProps, RState>() {
@@ -51,170 +56,45 @@ class Menu : RComponent<RProps, RState>() {
 
 
 
-        button {
-            attrs.onClickFunction = fun(event){
-                //println(JSON.stringify(project.produceGlyph(945, 945)?.path?.toPathData()))
-            }
-            +"G"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                GlobalScope.launch {
-                    val inputShape = arrayOf(1, 2, 1)
-                    val labelsShape = arrayOf(1, 2, 1)
-                    // Create a sequential model
-                    val model = tf.sequential()
-                    // Add a single hidden layer
-                    model.add(tf.layers.dense(jsObject{
-                        this.inputShape = inputShape
-                        units = 100
-                        useBias = true
-                    }))
-                    model.add(tf.layers.dense(jsObject{
-                        units = 100
-                        activation = "sigmoid"
-                    }))
-                    // Add an output layer
-                    model.add(tf.layers.dense(jsObject{
-                        units = inputShape.last()
-                        useBias = true
-                    }))
-                    // 加入最佳化的求解器、用MSE做為損失計算方式
-                    model.compile(jsObject{
-                        optimizer = tf.train.adam()
-                        loss = "meanSquaredError"
-                        metrics = arrayOf("mse")
-                    })
-                    val _model: LayersModel = model
-                    println("1")
-                    val inputs = arrayOf(arrayOf(arrayOf(arrayOf(1), arrayOf(3))))
-                    val inputsTensor = tf.tensor4d(inputs)!!
-                    val labels = arrayOf(arrayOf(arrayOf(arrayOf(1), arrayOf(3))))
-                    val labelsTensor = tf.tensor4d(labels)!!
-                    println("2")
-                    _model.fit(inputsTensor, labelsTensor, jsObject {
-                        this.batchSize = 32
-                        this.epochs = 50
-                        shuffle = true
-                        callbacks = tfvis.show.fitCallbacks(
-                                jsObject{ name = "Training Performance"},
-                                arrayOf("loss", "mse"),
-                                jsObject{
-                                    height = 200
-                                    callbacks = arrayOf("onEpochEnd")
-                                }
-                        )
-                    }).await()
-                    println(JSON.stringify(model.predict(inputsTensor).array().await()))
-                }
-            }
-            +"Test 0"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                GlobalScope.launch {
-                    val inputShape = arrayOf(2, 1)
-                    val labelsShape = arrayOf(2, 1)
-                    val model = tf.sequential()
-                    model.add(tf.layers.simpleRNN(jsObject{
-                        units = 1
-                        recurrentInitializer = "glorotNormal"
-                        this.inputShape = inputShape
-                    }))
-                    model.add(tf.layers.repeatVector(jsObject{
-                        n = labelsShape[0]
-                    }))
-                    model.add(tf.layers.simpleRNN(jsObject{
-                        units = 1
-                        recurrentInitializer = "glorotNormal"
-                        returnSequences = true
-                    }))
-                    model.add(tf.layers.timeDistributed(jsObject{
-                        layer = tf.layers.dense(jsObject{units = labelsShape.last()})
-                    }))
-                    model.add(tf.layers.activation(jsObject{
-                        activation = "softmax"
-                    }))
-                    model.compile(jsObject{
-                        loss = "binaryCrossentropy"
-                        optimizer = "adam"
-                        metrics = arrayOf("accuracy")
-                    })
-                    val _model: LayersModel = model
-                    val inputs = arrayOf(arrayOf(arrayOf(1), arrayOf(1)))
-                    val inputsTensor = tf.tensor3d(inputs)!!
-                    val labels = arrayOf(arrayOf(arrayOf(20), arrayOf(30)))
-                    val labelsTensor = tf.tensor3d(labels)!!
-                    _model.fit(inputsTensor, labelsTensor, jsObject {
-                        this.batchSize = 32
-                        this.epochs = 30
-                        shuffle = true
-                        callbacks = tfvis.show.fitCallbacks(
-                                jsObject{ name = "Training Performance"},
-                                arrayOf("loss", "mse"),
-                                jsObject{
-                                    height = 200
-                                    callbacks = arrayOf("onEpochEnd")
-                                }
-                        )
-                    }).await()
-                    println("A: "+ JSON.stringify(model.predict(inputsTensor).array().await()))
-                }
-            }
-            +"Test 1"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                console.log("Download ModelXXXXX")
-                /**/
-                GlobalScope.launch {
-                    //println(OpentypeJS.load(sourceHanSansTCUrl).await().glyphs.glyphs.toArray()[10000].path.toPathData())
-                }
-                val s = "M542 721L350 721C337 756 314 802 293 839L228 818C243 789 260 752 272 721L71 721L71 653L542 653ZM418 642C405 587 377 505 355 452L194 452L247 469C239 515 216 589 190 643L128 625C153 572 174 500 180 452L44 452L44 382L270 382L270 242L66 242L66 173L270 173L270-76L343-76L343 173L545 173L545 242L343 242L343 382L567 382L567 452L424 452C446 501 470 568 490 625ZM719 11C682 11 674 20 674 70L674 831L601 831L601 72C601-30 625-58 711-58L847-58C932-58 950 0 959 164C938 169 909 183 891 197C886 49 880 11 842 11Z"
-                val aGlyph = OpentypeJS.Glyph(jsObject {
-                    unicode = 65
-                    path = OpentypeJS.Path().setCommands(s)
-                })
-                /*
-                val _glyphs = arrayOf(aGlyph)
-                val f = OpentypeJS.Font(jsObject {
-                    familyName = "null"
-                    styleName = "null"
-                    unitsPerEm = 1000
-                    ascender = 800
-                    descender = -200
-                    glyphs = _glyphs
-                })*/
-                console.log(JSON.stringify(aGlyph))
 
-            }
-            +"Test 3"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
-                val max = 1024
-                val min = -1024
-                println(5.99*(max-min)+min)
-            }
-            +"Test 4"
-        }
-        button {
-            attrs.onClickFunction = fun(event){
 
+        styledInput(type = InputType.number) {
+            attrs {
+                val f  = fun(event: Event){
+                    project.calligrapher.sectionSize =
+                        (event.target.asDynamic().value as? String)?.toIntOrNull()?:return
+                }
+                onChangeFunction = f
+                defaultValue = project.calligrapher.sectionSize.toString()
             }
-            +"Test"
+        }
+        styledInput(type = InputType.number) {
+            attrs {
+                val f  = fun(event: Event){
+                    project.calligrapher.epochs =
+                        (event.target.asDynamic().value as? String)?.toIntOrNull()?:return
+                }
+                onChangeFunction = f
+                defaultValue = project.calligrapher.epochs.toString()
+            }
         }
         button {
             attrs.onClickFunction = fun(event){
-                project.initModel()
+                for(f in project.font){ console.log(f) }
+            }
+            +"FFF"
+        }
+        /*button {
+            attrs.onClickFunction = fun(event){
+                //project.initModel()
                 println("Init Model Done")
             }
             +"Init Model"
-        }
+        }*/
         button {
             attrs.onClickFunction = fun(event){
                 GlobalScope.launch {
-                    project.trainModel()
+                    project.calligrapher.train()
                     println("Train Model Done")
                 }
             }
@@ -222,8 +102,64 @@ class Menu : RComponent<RProps, RState>() {
         }
         button {
             attrs.onClickFunction = fun(event){
+                for(f in project.font){ f?.isKeep = false }
+            }
+            +"C S"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                for(i in 35..57){ project.font.getGlyphByUnicode(i)?.isKeep = true }
+                project.calligrapher.train()
+            }
+            +"Q T"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                for(f in project.font){ f?.isKeep = false }
+                val indexs = Random.drawNumbersOfRange(35, 70, 10)
+                for(i in indexs){
+                    println(i)
+                    console.log(project.font[i])
+                    console.log(project.font[i]?.path)
+                    project.font[i]?.isKeep = true
+                }
+                project.calligrapher.train()
+            }
+            +"R T"
+        }
+        var unicode = 57
+        styledInput(type = InputType.number) {
+            attrs {
+                val f  = fun(event: Event){
+                    unicode = (event.target.asDynamic().value as? String)?.toIntOrNull()?:return
+                }
+                onChangeFunction = f
+                defaultValue = unicode.toString()
+            }
+        }
+        button {
+            attrs.onClickFunction = fun(event){
                 GlobalScope.launch {
-                    project.saveModel()
+                    println("S")
+                    project.calligrapher.predict(unicode)
+                    println("F")
+                }
+            }
+            +"Predict"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                GlobalScope.launch {
+                    project.calligrapher.write(unicode)
+                    println("Write Done")
+                }
+            }
+            +"Write"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                GlobalScope.launch {
+                    project.calligrapher.modelManager.save()
                     println("Save Model Done")
                 }
             }
@@ -232,7 +168,7 @@ class Menu : RComponent<RProps, RState>() {
         button {
             attrs.onClickFunction = fun(event){
                 GlobalScope.launch {
-                    project.loadModel()
+                    project.calligrapher.modelManager
                     println("Load Model Done")
                 }
             }

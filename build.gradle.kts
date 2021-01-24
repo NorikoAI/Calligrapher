@@ -1,5 +1,5 @@
 plugins {
-    id("org.jetbrains.kotlin.js") version "1.4.10"
+    id("org.jetbrains.kotlin.js") version "1.4.21"
 }
 
 group = "package org.sourcekey.NorikoAI.Calligrapher"
@@ -14,6 +14,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-js"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+    implementation("org.jetbrains:kotlin-extensions:1.0.1-pre.110-kotlin-1.4.0")
     //React, React DOM + Wrappers (chapter 3)
     implementation("org.jetbrains:kotlin-react:16.13.1-pre.110-kotlin-1.4.0")
     implementation("org.jetbrains:kotlin-react-dom:16.13.1-pre.110-kotlin-1.4.0")
@@ -32,19 +33,27 @@ dependencies {
     implementation(npm("@material-ui/core", "^4.11.0"))
     implementation(npm("@material-ui/icons", "^4.9.1"))
     implementation("com.ccfraser.muirwik:muirwik-components:0.6.0")
-    //
+    //egjs/react-infinitegrid
     implementation(npm("@egjs/react-infinitegrid", "~3.0.5"))
     //JQuery
-    implementation(npm("jquery", "3.5.1"))
+    val jQueryVersion = "3.5.1"
+    implementation(npm("jquery", jQueryVersion))
+    //implementation(npm("@types/jquery", jQueryVersion, generateExternals = true))
     //Opentype.js
-    implementation(npm("opentype.js", "~1.3.2"))
+    val opentypeJsVersion = "1.3.3"
+    implementation(npm("opentype.js", opentypeJsVersion))
+    //implementation(npm("@types/opentype.js", "1.3.1", generateExternals = true))
     //TensorFlow
-    implementation(npm("@tensorflow/tfjs", "~2.4.0", generateExternals = false))
+    implementation(npm("@tensorflow/tfjs", "~2.8.3", generateExternals = false))
     implementation(npm("@tensorflow/tfjs-vis", "1.4.3", generateExternals = false))
+    //D3
+    val d3Version = "6.2.0"
+    implementation(npm("d3", d3Version))
+    //implementation(npm("@types/d3", d3Version, generateExternals = true))
 }
 
 kotlin {
-    js {
+    js/*(IR)*/ {
         browser {
             webpackTask {
                 cssSupport.enabled = true

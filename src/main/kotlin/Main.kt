@@ -1,5 +1,6 @@
+
 import kotlinext.js.requireAll
-import kotlinx.browser.*
+import kotlinx.browser.document
 import kotlinx.css.*
 import org.sourcekey.NorikoAI.Calligrapher.app
 import react.dom.render

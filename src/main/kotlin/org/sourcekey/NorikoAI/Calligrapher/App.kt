@@ -1,18 +1,14 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
+import ExtendedFun.jsObject
+import OpentypeJS.Font
+import com.ccfraser.muirwik.components.mThemeProvider
+import com.ccfraser.muirwik.components.styles.createMuiTheme
+import kotlinx.browser.window
 import kotlinx.css.*
-import kotlinx.html.js.onClickFunction
 import react.*
-import react.dom.*
 import styled.css
 import styled.styledDiv
-import OpentypeJS.*
-import com.ccfraser.muirwik.components.mThemeProvider
-import com.ccfraser.muirwik.components.styles.*
-import kotlinx.browser.window
-
-val sourceHanSansTCUrl: String = "font/SourceHanSans_v1.001/SourceHanSansTC-Regular.otf"
-val wcl01Url: String = "font/HanWang/WCL-01.ttf"
 
 
 var theme = createMuiTheme(jsObject {
@@ -26,29 +22,18 @@ var theme = createMuiTheme(jsObject {
     }
 }.asDynamic())
 
-var project: Project = Project("", wcl01Url)
+val wcl01Url: String = "font/HanWang/WCL-01.ttf"
+
+val referenceFontUrl: String = "font/SourceHanSans_v1.001/SourceHanSansTC-Regular.otf"
+
+var project: Project = Project("", referenceFontUrl)
 
 interface AppState: RState{
     var searchUnicodeHex: String
 }
 
 class App : RComponent<RProps, AppState>() {
-    /*
-    var timerID: Int? = null
-
-    override fun componentDidMount() {
-        timerID = window.setInterval({
-            // actually, the operation is performed on a state's copy, so it stays effectively immutable
-            setState{}
-        }, 5000)
-    }
-
-    override fun componentWillUnmount() {
-        window.clearInterval(timerID!!)
-    }
-*/
     override fun RBuilder.render() {
-        console.log(theme)
         mThemeProvider(theme = theme) {
             styledDiv {
                 css {
@@ -58,12 +43,16 @@ class App : RComponent<RProps, AppState>() {
                     right = 0.px
                     zIndex = 1000
                 }
+                var timer = 0
                 topBar(fun(unicodeHex){
-                    setState { searchUnicodeHex = unicodeHex }
+                    window.clearTimeout(timer)
+                    timer = window.setTimeout(fun(){
+                        setState { searchUnicodeHex = unicodeHex }
+                    }, 1000)
                 })
             }
             styledDiv{ css { height = 7.vh } }
-            charGrid(fun(): OpentypeJS.Font{ return project.produceFont }, state.searchUnicodeHex)
+            charGrid(fun(): Font{ return project.font }, state.searchUnicodeHex)
         }
     }
 }
@@ -75,7 +64,7 @@ fun RBuilder.app() = child(App::class) {}
 
 
 
-
+/*
 val renderCount = functionalComponent<RProps> {
     val (count, setCount) = useState(0)
     useEffect {
@@ -94,3 +83,6 @@ val renderCount = functionalComponent<RProps> {
 fun RBuilder.renderCount() {
     child(renderCount)
 }
+
+
+ */

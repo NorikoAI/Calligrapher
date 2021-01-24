@@ -1,10 +1,10 @@
 package TensorFlowJS
 
 import kotlinext.js.Object
-import kotlin.js.Json
 import org.khronos.webgl.*
 import org.w3c.dom.*
 import org.w3c.files.File
+import kotlin.js.Json
 import kotlin.js.Promise
 
 
@@ -349,11 +349,11 @@ open external class Tensor{
 
     fun logSoftmax(axis: Number = definedExternally): Tensor
 
-    fun moments(): Json
+    fun moments(): dynamic/*Json*/
 
-    fun moments(axis: Number = definedExternally, keepDims: Boolean = definedExternally): Json
+    fun moments(axis: Number = definedExternally, keepDims: Boolean = definedExternally): dynamic/*Json*/
 
-    fun moments(axis: Array<Number> = definedExternally, keepDims: Boolean = definedExternally): Json
+    fun moments(axis: Array<Number> = definedExternally, keepDims: Boolean = definedExternally): dynamic/*Json*/
 
     fun softmax(dim: Number = definedExternally): Tensor
 
@@ -387,7 +387,7 @@ open external class Tensor{
 
     //Operations / Evaluation
 
-    fun topk(k: Number = definedExternally, sorted: Boolean = definedExternally): Json?
+    fun topk(k: Number = definedExternally, sorted: Boolean = definedExternally): dynamic/*Json*/?
 
     //Operations / Segment
 
@@ -494,13 +494,13 @@ open external class ConfigDict
 open external class SymbolicTensor
 
 open external class Layer: Serializable{
-    fun apply(inputs: Tensor, kwargs: Json = definedExternally): Tensor
+    fun apply(inputs: Tensor, kwargs: dynamic/*Json*/ = definedExternally): Tensor
 
-    fun apply(inputs: Array<Tensor>, kwargs: Json = definedExternally): Array<Tensor>
+    fun apply(inputs: Array<Tensor>, kwargs: dynamic/*Json*/ = definedExternally): Array<Tensor>
 
-    fun apply(inputs: SymbolicTensor, kwargs: Json = definedExternally): SymbolicTensor
+    fun apply(inputs: SymbolicTensor, kwargs: dynamic/*Json*/ = definedExternally): SymbolicTensor
 
-    fun apply(inputs: Array<SymbolicTensor>, kwargs: Json = definedExternally): Array<SymbolicTensor>
+    fun apply(inputs: Array<SymbolicTensor>, kwargs: dynamic/*Json*/ = definedExternally): Array<SymbolicTensor>
 
     fun countParams(): Number
 
@@ -541,143 +541,143 @@ open external class Layers{
 
     //Layers / Advanced Activation
 
-    fun elu(args: Json = definedExternally): Layer
+    fun elu(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun leakyReLU(args: Json = definedExternally): Layer
+    fun leakyReLU(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun prelu(args: Json = definedExternally): Layer
+    fun prelu(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun reLU(args: Json = definedExternally): Layer
+    fun reLU(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun softmax(args: Json = definedExternally): Layer
+    fun softmax(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun thresholdedReLU(args: Json = definedExternally): Layer
+    fun thresholdedReLU(args: dynamic/*Json*/ = definedExternally): Layer
 
     //Layers / Basic
 
-    fun activation(args: Json): Layer
+    fun activation(args: dynamic/*Json*/): Layer
 
-    fun dense(args: Json): Layer
+    fun dense(args: dynamic/*Json*/): Layer
 
-    fun dropout(args: Json): Layer
+    fun dropout(args: dynamic/*Json*/): Layer
 
-    fun embedding(args: Json): Layer
+    fun embedding(args: dynamic/*Json*/): Layer
 
-    fun flatten(args: Json = definedExternally): Layer
+    fun flatten(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun permute(args: Json): Layer
+    fun permute(args: dynamic/*Json*/): Layer
 
-    fun repeatVector(args: Json): Layer
+    fun repeatVector(args: dynamic/*Json*/): Layer
 
-    fun reshape(args: Json): Layer
+    fun reshape(args: dynamic/*Json*/): Layer
 
-    fun spatialDropout1d(args: Json): Layer
+    fun spatialDropout1d(args: dynamic/*Json*/): Layer
 
     //Layers / Convolutional
 
-    fun conv1d(args: Json): Layer
+    fun conv1d(args: dynamic/*Json*/): Layer
 
-    fun conv2d(args: Json): Layer
+    fun conv2d(args: dynamic/*Json*/): Layer
 
-    fun conv2dTranspose(args: Json): Layer
+    fun conv2dTranspose(args: dynamic/*Json*/): Layer
 
-    fun conv3d(args: Json): Layer
+    fun conv3d(args: dynamic/*Json*/): Layer
 
-    fun cropping2D(args: Json): Layer
+    fun cropping2D(args: dynamic/*Json*/): Layer
 
-    fun depthwiseConv2d(args: Json): Layer
+    fun depthwiseConv2d(args: dynamic/*Json*/): Layer
 
-    fun separableConv2d(args: Json): Layer
+    fun separableConv2d(args: dynamic/*Json*/): Layer
 
-    fun upSampling2d(args: Json): Layer
+    fun upSampling2d(args: dynamic/*Json*/): Layer
 
     //Layers / Merge
 
-    fun add(args: Json = definedExternally): Layer
+    fun add(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun average(args: Json = definedExternally): Layer
+    fun average(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun concatenate(args: Json = definedExternally): Layer
+    fun concatenate(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun dot(args: Json = definedExternally): Layer
+    fun dot(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun maximum(args: Json = definedExternally): Layer
+    fun maximum(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun minimum(args: Json = definedExternally): Layer
+    fun minimum(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun multiply(args: Json = definedExternally): Layer
+    fun multiply(args: dynamic/*Json*/ = definedExternally): Layer
 
     //Layers / Normalization
 
-    fun batchNormalization(args: Json = definedExternally): Layer
+    fun batchNormalization(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun layerNormalization(args: Json = definedExternally): Layer
+    fun layerNormalization(args: dynamic/*Json*/ = definedExternally): Layer
 
     //Layers / Pooling
 
-    fun averagePooling1d(args: Json): Layer
+    fun averagePooling1d(args: dynamic/*Json*/): Layer
 
-    fun averagePooling2d(args: Json): Layer
+    fun averagePooling2d(args: dynamic/*Json*/): Layer
 
-    fun averagePooling3d(args: Json): Layer
+    fun averagePooling3d(args: dynamic/*Json*/): Layer
 
-    fun globalAveragePooling1d(args: Json = definedExternally): Layer
+    fun globalAveragePooling1d(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun globalAveragePooling2d(args: Json): Layer
+    fun globalAveragePooling2d(args: dynamic/*Json*/): Layer
 
-    fun globalMaxPooling1d(args: Json = definedExternally): Layer
+    fun globalMaxPooling1d(args: dynamic/*Json*/ = definedExternally): Layer
 
-    fun globalMaxPooling2d(args: Json): Layer
+    fun globalMaxPooling2d(args: dynamic/*Json*/): Layer
 
-    fun maxPooling1d(args: Json): Layer
+    fun maxPooling1d(args: dynamic/*Json*/): Layer
 
-    fun maxPooling2d(args: Json): Layer
+    fun maxPooling2d(args: dynamic/*Json*/): Layer
 
-    fun maxPooling3d(args: Json): Layer
+    fun maxPooling3d(args: dynamic/*Json*/): Layer
 
     //Layers / Recurrent
 
-    fun gru(args: Json): Layer
+    fun gru(args: dynamic/*Json*/): Layer
 
-    fun gruCell(args: Json): RNNCell
+    fun gruCell(args: dynamic/*Json*/): RNNCell
 
-    fun lstm(args: Json): Layer
+    fun lstm(args: dynamic/*Json*/): Layer
 
-    fun lstmCell(args: Json): RNNCell
+    fun lstmCell(args: dynamic/*Json*/): RNNCell
 
-    fun rnn(args: Json): Layer
+    fun rnn(args: dynamic/*Json*/): Layer
 
-    fun simpleRNN(args: Json): Layer
+    fun simpleRNN(args: dynamic/*Json*/): Layer
 
-    fun simpleRNNCell(args: Json): RNNCell
+    fun simpleRNNCell(args: dynamic/*Json*/): RNNCell
 
-    fun stackedRNNCells(args: Json): RNNCell
+    fun stackedRNNCells(args: dynamic/*Json*/): RNNCell
 
     //Layers / Wrapper
 
-    fun bidirectional(args: Json): Bidirectional
+    fun bidirectional(args: dynamic/*Json*/): Bidirectional
 
-    fun timeDistributed(args: Json): Layer
+    fun timeDistributed(args: dynamic/*Json*/): Layer
 
     //Layers / Inputs
 
-    fun inputLayer(args: Json): Layer
+    fun inputLayer(args: dynamic/*Json*/): Layer
 
     //Layers / Padding
 
-    fun zeroPadding2d(args: Json = definedExternally): Layer
+    fun zeroPadding2d(args: dynamic/*Json*/ = definedExternally): Layer
 
     //Layers / Noise
 
-    fun alphaDropout(args: Json): AlphaDropout
+    fun alphaDropout(args: dynamic/*Json*/): AlphaDropout
 
-    fun gaussianDropout(args: Json): GaussianDropout
+    fun gaussianDropout(args: dynamic/*Json*/): GaussianDropout
 
-    fun gaussianNoise(args: Json): GaussianNoise
+    fun gaussianNoise(args: dynamic/*Json*/): GaussianNoise
 
     //Layers / Mask
 
-    fun masking(args: Json = definedExternally): Layer
+    fun masking(args: dynamic/*Json*/ = definedExternally): Layer
 }
 
 open external class Initializer
@@ -685,33 +685,33 @@ open external class Initializer
 open external class Zeros
 
 open external class Initializers: Serializable{
-    fun constant(args: Json): Initializer
+    fun constant(args: dynamic/*Json*/): Initializer
 
-    fun glorotNormal(args: Json): Initializer
+    fun glorotNormal(args: dynamic/*Json*/): Initializer
 
-    fun glorotUniform(args: Json): Initializer
+    fun glorotUniform(args: dynamic/*Json*/): Initializer
 
-    fun heNormal(args: Json): Initializer
+    fun heNormal(args: dynamic/*Json*/): Initializer
 
-    fun heUniform(args: Json): Initializer
+    fun heUniform(args: dynamic/*Json*/): Initializer
 
-    fun identity(args: Json): Initializer
+    fun identity(args: dynamic/*Json*/): Initializer
 
-    fun leCunNormal(args: Json): Initializer
+    fun leCunNormal(args: dynamic/*Json*/): Initializer
 
-    fun leCunUniform(args: Json): Initializer
+    fun leCunUniform(args: dynamic/*Json*/): Initializer
 
     fun ones(): Initializer
 
-    fun orthogonal(args: Json): Initializer
+    fun orthogonal(args: dynamic/*Json*/): Initializer
 
-    fun randomNormal(args: Json): Initializer
+    fun randomNormal(args: dynamic/*Json*/): Initializer
 
-    fun randomUniform(args: Json): Initializer
+    fun randomUniform(args: dynamic/*Json*/): Initializer
 
-    fun truncatedNormal(args: Json): Initializer
+    fun truncatedNormal(args: dynamic/*Json*/): Initializer
 
-    fun varianceScaling(args: Json): Initializer
+    fun varianceScaling(args: dynamic/*Json*/): Initializer
 
     fun zeros(): Zeros
 }
@@ -721,13 +721,13 @@ open external class Regularizer
 open external class Constraint: Serializable
 
 open external class Constraints{
-    fun maxNorm(args: Json): Constraint
+    fun maxNorm(args: dynamic/*Json*/): Constraint
 
-    fun minMaxNorm(config: Json): Constraint
+    fun minMaxNorm(config: dynamic/*Json*/): Constraint
 
     fun nonNeg(): Constraint
 
-    fun unitNorm(args: Json): Constraint
+    fun unitNorm(args: dynamic/*Json*/): Constraint
 }
 
 open external class LayerVariable
@@ -807,9 +807,9 @@ open external class Data{
 
     fun array(items: Array<Tensor>): Dataset
 
-    fun array(items: Json): Dataset
+    fun array(items: dynamic/*Json*/): Dataset
 
-    fun csv(source: RequestInfo, csvConfig: Json = definedExternally): CSVDataset
+    fun csv(source: RequestInfo, csvConfig: dynamic/*Json*/ = definedExternally): CSVDataset
 
     fun generator(generator:()->Iterator<dynamic>): Dataset
 
@@ -825,9 +825,9 @@ open external class Data{
 
     fun generator(generator:()->Promise<Iterator<Json>>): Dataset
 
-    fun microphone(microphoneConfig: Json = definedExternally): Promise<MicrophoneIterator>
+    fun microphone(microphoneConfig: dynamic/*Json*/ = definedExternally): Promise<MicrophoneIterator>
 
-    fun webcam(webcamVideoElement: HTMLVideoElement = definedExternally, webcamConfig: Json = definedExternally): Promise<WebcamIterator>
+    fun webcam(webcamVideoElement: HTMLVideoElement = definedExternally, webcamConfig: dynamic/*Json*/ = definedExternally): Promise<WebcamIterator>
 
     //Data / Operations
 
@@ -854,7 +854,7 @@ open external class IO{
 
     fun browserFiles(files: Array<File>): IOHandler
 
-    fun http(path: String, loadOptions: Json = definedExternally): IOHandler
+    fun http(path: String, loadOptions: dynamic/*Json*/ = definedExternally): IOHandler
 
     //Models / Management
 
@@ -874,49 +874,49 @@ open external class Variable: Tensor{
 open external class LayersModel{
     //inline printFn:(message: dynamic, optionalParams: dynamic)->Unit)
 
-    fun compile(args: Json)
+    fun compile(args: dynamic/*Json*/)
 
-    fun evaluate(x: Tensor, y: Tensor, args: Json = definedExternally): Scalar
+    fun evaluate(x: Tensor, y: Tensor, args: dynamic/*Json*/ = definedExternally): Scalar
 
-    fun evaluate(x: Array<Tensor>, y: Array<Tensor>, args: Json = definedExternally): Array<Scalar>
+    fun evaluate(x: Array<Tensor>, y: Array<Tensor>, args: dynamic/*Json*/ = definedExternally): Array<Scalar>
 
-    //fun evaluateDataset(dataset: Data.Dataset, args: Json = definedExternally): Promise<Scalar|Array<Scalar>>
+    //fun evaluateDataset(dataset: Data.Dataset, args: dynamic/*Json*/ = definedExternally): Promise<Scalar|Array<Scalar>>
 
-    fun predict(x: Tensor, args: Json = definedExternally): Tensor
+    fun predict(x: Tensor, args: dynamic/*Json*/ = definedExternally): Tensor
 
-    fun predict(x: Array<Tensor>, args: Json = definedExternally): Array<Tensor>
+    fun predict(x: Array<Tensor>, args: dynamic/*Json*/ = definedExternally): Array<Tensor>
 
     fun predictOnBatch(x: Tensor): Tensor
 
     fun predictOnBatch(x: Array<Tensor>): Array<Tensor>
 
-    fun fit(x: Tensor, y: Tensor, args: Json = definedExternally): Promise<History>
+    fun fit(x: Tensor, y: Tensor, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Tensor, y: Array<Tensor>, args: Json = definedExternally): Promise<History>
+    fun fit(x: Tensor, y: Array<Tensor>, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Tensor, y: Json, args: Json = definedExternally): Promise<History>
+    fun fit(x: Tensor, y: dynamic/*Json*/, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Array<Tensor>, y: Tensor, args: Json = definedExternally): Promise<History>
+    fun fit(x: Array<Tensor>, y: Tensor, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Array<Tensor>, y: Array<Tensor>, args: Json = definedExternally): Promise<History>
+    fun fit(x: Array<Tensor>, y: Array<Tensor>, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Array<Tensor>, y: Json, args: Json = definedExternally): Promise<History>
+    fun fit(x: Array<Tensor>, y: dynamic/*Json*/, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Json, y: Tensor, args: Json = definedExternally): Promise<History>
+    fun fit(x: dynamic/*Json*/, y: Tensor, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Json, y: Array<Tensor>, args: Json = definedExternally): Promise<History>
+    fun fit(x: dynamic/*Json*/, y: Array<Tensor>, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fit(x: Json, y: Json, args: Json = definedExternally): Promise<History>
+    fun fit(x: dynamic/*Json*/, y: dynamic/*Json*/, args: dynamic/*Json*/ = definedExternally): Promise<History>
 
-    fun fitDataset(dataset: Dataset, args: Json): Promise<History>
+    fun fitDataset(dataset: Dataset, args: dynamic/*Json*/): Promise<History>
 
     fun trainOnBatch(x: Tensor, y: Tensor): Promise<Double>
 
     fun trainOnBatch(x: Array<Tensor>, y: Array<Tensor>): Promise<DoubleArray>
 
-    fun save(handlerOrURL: IOHandler, config: Json = definedExternally): Promise<SaveResult>
+    fun save(handlerOrURL: IOHandler, config: dynamic/*Json*/ = definedExternally): Promise<SaveResult>
 
-    fun save(handlerOrURL: String, config: Json = definedExternally): Promise<SaveResult>
+    fun save(handlerOrURL: String, config: dynamic/*Json*/ = definedExternally): Promise<SaveResult>
 
     fun getLayer(): Layer
 
@@ -934,15 +934,15 @@ open external class InferenceModel
 open external class GraphModel: InferenceModel{
     fun loadSync(artifacts: ModelArtifacts): Boolean
 
-    fun save(handlerOrURL: IOHandler, config: Json = definedExternally): Promise<SaveResult>
+    fun save(handlerOrURL: IOHandler, config: dynamic/*Json*/ = definedExternally): Promise<SaveResult>
 
-    fun save(handlerOrURL: String, config: Json = definedExternally): Promise<SaveResult>
+    fun save(handlerOrURL: String, config: dynamic/*Json*/ = definedExternally): Promise<SaveResult>
 
-    fun predict(inputs: Tensor, config: Json): Tensor
+    fun predict(inputs: Tensor, config: dynamic/*Json*/): Tensor
 
-    fun predict(inputs: Array<Tensor>, config: Json): Array<Tensor>
+    fun predict(inputs: Array<Tensor>, config: dynamic/*Json*/): Array<Tensor>
 
-    fun predict(inputs: Json, config: Json): Json
+    fun predict(inputs: dynamic/*Json*/, config: dynamic/*Json*/): dynamic/*Json*/
 
     fun execute(inputs: Tensor, outputs: String): Tensor
 
@@ -972,7 +972,7 @@ open external class Image{
 
     fun nonMaxSuppressionAsync(boxes: Tensor2D, scores: Tensor1D, maxOutputSize: Number, iouThreshold: Number = definedExternally, scoreThreshold: Number = definedExternally): Promise<Tensor1D>
 
-    fun nonMaxSuppressionWithScore(boxes: Tensor2D, scores: Tensor1D, maxOutputSize: Number, iouThreshold: Number = definedExternally, scoreThreshold: Number = definedExternally, softNmsSigma: Number = definedExternally): Json
+    fun nonMaxSuppressionWithScore(boxes: Tensor2D, scores: Tensor1D, maxOutputSize: Number, iouThreshold: Number = definedExternally, scoreThreshold: Number = definedExternally, softNmsSigma: Number = definedExternally): dynamic/*Json*/
 
     fun resizeBilinear(images: Tensor3D, size: Array<Int>, alignCorners: Boolean = definedExternally): Tensor3D
 
@@ -1108,11 +1108,11 @@ open external class Environment
 open external class Engine
 
 open external class Regularizers{
-    fun l1(config: Json = definedExternally): Regularizer
+    fun l1(config: dynamic/*Json*/ = definedExternally): Regularizer
 
-    fun l1l2(config: Json = definedExternally): Regularizer
+    fun l1l2(config: dynamic/*Json*/ = definedExternally): Regularizer
 
-    fun l2(config: Json = definedExternally): Regularizer
+    fun l2(config: dynamic/*Json*/ = definedExternally): Regularizer
 }
 
 open external class RequestInit
@@ -1192,7 +1192,7 @@ open external class Metrics{
 open external class EarlyStopping
 
 open external class Callbacks{
-    fun earlyStopping(args: Json = definedExternally): EarlyStopping
+    fun earlyStopping(args: dynamic/*Json*/ = definedExternally): EarlyStopping
 }
 
 @JsModule("@tensorflow/tfjs")
@@ -1334,23 +1334,23 @@ external object Tensorflow{
 
     //Models / Creation
 
-    fun sequential(config: Json = definedExternally): Sequential
+    fun sequential(config: dynamic/*Json*/ = definedExternally): Sequential
 
-    fun model(args: Json): LayersModel
+    fun model(args: dynamic/*Json*/): LayersModel
 
     //Models / Inputs
 
-    fun input(config: Json): SymbolicTensor
+    fun input(config: dynamic/*Json*/): SymbolicTensor
 
     //Models / Loading
 
-    fun loadGraphModel(modelUrl: String, options: Json = definedExternally): Promise<GraphModel>
+    fun loadGraphModel(modelUrl: String, options: dynamic/*Json*/ = definedExternally): Promise<GraphModel>
 
-    fun loadGraphModel(modelUrl: IOHandler, options: Json = definedExternally): Promise<GraphModel>
+    fun loadGraphModel(modelUrl: IOHandler, options: dynamic/*Json*/ = definedExternally): Promise<GraphModel>
 
-    fun loadLayersModel(pathOrIOHandler: String, options: Json = definedExternally): Promise<LayersModel>
+    fun loadLayersModel(pathOrIOHandler: String, options: dynamic/*Json*/ = definedExternally): Promise<LayersModel>
 
-    fun loadLayersModel(pathOrIOHandler: IOHandler, options: Json = definedExternally): Promise<LayersModel>
+    fun loadLayersModel(pathOrIOHandler: IOHandler, options: dynamic/*Json*/ = definedExternally): Promise<LayersModel>
 
     //Models / Serialization
 
@@ -1362,7 +1362,7 @@ external object Tensorflow{
 
     fun getRegisteredOp(name: String): OpMapper
 
-    fun registerOp(name: String, opFunc: Json)
+    fun registerOp(name: String, opFunc: dynamic/*Json*/)
 
     //Operations / Arithmetic
 
@@ -1770,21 +1770,21 @@ external object Tensorflow{
 
     fun maxPool3d(x: Tensor5D, filterSize: Number, strides: Number, pad: Number, dimRoundingMode: String = definedExternally, dataFormat: String = definedExternally, dilations: Number = definedExternally): Tensor5D
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Array<Number>, pad: String, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Array<Number>, pad: String, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Array<Number>, pad: Number, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Array<Number>, pad: Number, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Number, pad: String, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Number, pad: String, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Number, pad: Number, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Array<Number>, strides: Number, pad: Number, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Array<Number>, pad: String, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Array<Number>, pad: String, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Array<Number>, pad: Number, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Array<Number>, pad: Number, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Number, pad: String, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Number, pad: String, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
-    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Number, pad: Number, includeBatchInIndex: Boolean = definedExternally): Json
+    fun maxPoolWithArgmax(x: Tensor4D, filterSize: Number, strides: Number, pad: Number, includeBatchInIndex: Boolean = definedExternally): dynamic/*Json*/
 
     fun pool(input: Tensor3D, windowShape: Array<Number>, poolingType: String, pad: String): Tensor3D
 
@@ -1982,11 +1982,11 @@ external object Tensorflow{
 
     fun logSoftmax(logits: Tensor, axis: Number = definedExternally): Tensor
 
-    fun moments(x: Tensor): Json
+    fun moments(x: Tensor): dynamic/*Json*/
 
-    fun moments(x: Tensor, axis: Number = definedExternally, keepDims: Boolean = definedExternally): Json
+    fun moments(x: Tensor, axis: Number = definedExternally, keepDims: Boolean = definedExternally): dynamic/*Json*/
 
-    fun moments(x: Tensor, axis: Array<Number> = definedExternally, keepDims: Boolean = definedExternally): Json
+    fun moments(x: Tensor, axis: Array<Number> = definedExternally, keepDims: Boolean = definedExternally): dynamic/*Json*/
 
     fun softmax(logits: Tensor, dim: Number = definedExternally): Tensor
 
@@ -2038,7 +2038,7 @@ external object Tensorflow{
 
     fun inTopKAsync(predictions: Tensor, targets: Tensor, k: Number = definedExternally): Promise<Tensor?>?
 
-    fun topk(x: Tensor, k: Number = definedExternally, sorted: Boolean = definedExternally): Json?
+    fun topk(x: Tensor, k: Number = definedExternally, sorted: Boolean = definedExternally): dynamic/*Json*/?
 
     //Operations / Segment
 
@@ -2098,7 +2098,7 @@ external object Tensorflow{
 
     //fun valueAndGrads(f:(vararg args: Array<Tensor>)->Tensor):(x: Array<Tensor>, dy: Tensor? = definedExternally)->Json
 
-    fun variableGrads(f:()->Scalar, varList: Array<Variable> = definedExternally): Json
+    fun variableGrads(f:()->Scalar, varList: Array<Variable> = definedExternally): dynamic/*Json*/
 
     //Training / Optimizers
 
@@ -2124,7 +2124,7 @@ external object Tensorflow{
 
     fun dispose(container: Array<Tensor>)
 
-    fun dispose(container: Json)
+    //fun dispose(container: dynamic/*Json*/)
 
     fun dispose(container: dynamic)
 
@@ -2218,6 +2218,8 @@ external object Tensorflow{
 
 val tf = Tensorflow
 
+/*************************************************/
+
 //val tfvis = require("@tensorflow/tfjs-vis")
 /**
  * @tensorflow/tfjs-vis CDN
@@ -2225,4 +2227,73 @@ val tf = Tensorflow
  * 解決方法暫時用CDN版本住先
  * */
 @JsModule("@tensorflow/tfjs-vis")
-external val tfvis: dynamic//js("tfvis")
+external object TensorflowVisualization{
+    open class Surface {
+        val container: Any
+        val label: Any
+        val drawArea: HTMLElement
+    }
+    open class Visor{
+        fun surface(options: dynamic/*Json*/): Surface
+        fun isFullscreen (): Boolean
+        fun isOpen (): Boolean
+        fun close ()
+        fun open ()
+        fun toggle ()
+        fun toggleFullScreen ()
+        fun bindKeys ()
+        fun unbindKeys ()
+        fun setActiveTab (tabName: String)
+    }
+    open class Show{
+        fun layer (container: HTMLElement, layer: Layer): Any
+        fun layer (container: dynamic/*Json*/, layer: Layer): Any
+        fun layer (container: Surface, layer: Layer): Any
+        fun modelSummary (container: HTMLElement, model: LayersModel): Any
+        fun modelSummary (container: dynamic/*Json*/, model: LayersModel): Any
+        fun modelSummary (container: Surface, model: LayersModel): Any
+        fun valuesDistribution (container: HTMLElement, tensor: Tensor): Any
+        fun valuesDistribution (container: dynamic/*Json*/, tensor: Tensor): Any
+        fun valuesDistribution (container: Surface, tensor: Tensor): Any
+        fun fitCallbacks (container: HTMLElement, metrics: Array<String>, opts: dynamic/*Json*/ = definedExternally): dynamic/*FitCallbackHandlers*/
+        fun fitCallbacks (container: dynamic/*Json*/, metrics: Array<String>, opts: dynamic/*Json*/ = definedExternally): dynamic/*FitCallbackHandlers*/
+        fun fitCallbacks (container: Surface, metrics: Array<String>, opts: dynamic/*Json*/ = definedExternally): dynamic/*FitCallbackHandlers*/
+        fun history (container: HTMLElement, history: dynamic/*HistoryLike*/, metrics: Array<String>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun history (container: dynamic/*Json*/, history: dynamic/*HistoryLike*/, metrics: Array<String>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun history (container: Surface, history: dynamic/*HistoryLike*/, metrics: Array<String>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+    }
+    open class Render{
+        fun barchart (container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun barchart (container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun barchart (container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun confusionMatrix(container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun confusionMatrix(container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun confusionMatrix(container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun heatmap(container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun heatmap(container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun heatmap(container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun histogram(container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): dynamic/*unknown*/
+        fun histogram(container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): dynamic/*unknown*/
+        fun histogram(container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): dynamic/*unknown*/
+        fun linechart(container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun linechart(container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun linechart(container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun scatterplot(container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun scatterplot(container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun scatterplot(container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally): Promise<Unit>
+        fun table(container: HTMLElement, data: Array<*>, opts: dynamic/*Json*/ = definedExternally)
+        fun table(container: dynamic/*Json*/, data: Array<*>, opts: dynamic/*Json*/ = definedExternally)
+        fun table(container: Surface, data: Array<*>, opts: dynamic/*Json*/ = definedExternally)
+    }
+    open class Metrics{
+        fun accuracy (labels: Tensor, predictions: Tensor)
+        fun confusionMatrix (labels: Tensor1D, predictions: Tensor1D, numClasses: Number = definedExternally, weights: Tensor1D = definedExternally)
+        fun perClassAccuracy (labels: Tensor1D, predictions: Tensor1D, numClasses: Number = definedExternally)
+    }
+    fun visor(): Visor
+    val show: Show
+    val render: Render
+    val metrics: Metrics
+}
+
+val tfvis = TensorflowVisualization

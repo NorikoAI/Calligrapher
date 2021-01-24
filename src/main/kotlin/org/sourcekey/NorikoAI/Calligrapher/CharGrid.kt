@@ -1,11 +1,13 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
-import OpentypeJS.*
+import ExtendedFun.jsObject
+import OpentypeJS.Font
+import OpentypeJS.Glyph
 import kotlinx.browser.window
 import kotlinx.css.*
-import kotlinx.html.weekInput
+import kotlinx.html.js.onClickFunction
+import org.w3c.dom.CanvasRenderingContext2D
 import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.RenderingContext
 import react.*
 import react.dom.*
 import react.infinitegrid.*
@@ -18,11 +20,11 @@ interface CharProps : RProps {
     var groupKey: Int
     var key: Int
     var unicode: Int
-    var getFont: ()->OpentypeJS.Font
+    var getFont: ()->Font
 }
 
 class CharState: RState{
-    var glyph: OpentypeJS.Glyph? = null
+    var glyph: Glyph? = null
 }
 
 private class Char: RComponent<CharProps, CharState>() {
@@ -33,10 +35,8 @@ private class Char: RComponent<CharProps, CharState>() {
 
     fun drawGlyph(){
         setState{
-            this.glyph = try{
-                val char = String.fromCodePoint(props.unicode)
-                val glyph = props.getFont().charToGlyph(char)
-                if(glyph.path.commands.isNotEmpty()){ glyph }else{ null }
+            glyph = try{
+                props.getFont().getGlyphByUnicode(props.unicode)?.filterInvalid()
             }catch(e: dynamic){ null }
         }
     }
@@ -55,10 +55,25 @@ private class Char: RComponent<CharProps, CharState>() {
     override fun RBuilder.render() {
         styledDiv{
             css{
-                if(state.glyph != null){ background = "#FAFAFA" }else{ background = "#EEE" } //"#FFF7F7"
+                background = if(state.glyph?.isKeep == true){ "#FAFADD" }else{ "#FAFAFA" } //"#FFF7F7"
+                if(state.glyph == null){ background = "#DDD" }
                 width = 10.vh
                 //height = 10.vh
                 overflow = Overflow.hidden
+                focus {
+                    borderStyle = BorderStyle.solid
+                    borderColor = Color.yellow
+                }
+                hover {
+                    background = if(state.glyph?.isKeep == true){ "#FFC" }else{ "#EEE" }
+                }
+                active {
+                    background = if(state.glyph?.isKeep == true){ "#FFA" }else{ "#CCC" }
+                }
+            }
+            attrs.onClickFunction = fun(event){
+                setState { state.glyph?.isKeep = state.glyph?.isKeep != true }
+                console.log(state.glyph)
             }
             div {
                 +"U+${props.unicode.toString(16).toUpperCase()}"
@@ -75,8 +90,8 @@ private class Char: RComponent<CharProps, CharState>() {
                 ref {
                     state.glyph?:return@ref
                     val canvas = it as? HTMLCanvasElement?:return@ref
-                    val ctx = canvas.getContext("2d")?:return@ref
-                    ctx.asDynamic().clearRect(0, 0, canvas.width, canvas.height)
+                    val ctx = canvas.getContext("2d")as? CanvasRenderingContext2D?: return@ref
+                    ctx.clearRect(0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble())
                     val x = 40
                     val y = 150
                     val fontSize = 120
@@ -90,7 +105,7 @@ private class Char: RComponent<CharProps, CharState>() {
 
 }
 
-private fun RBuilder.char(groupKey: Int, unicode: Int, getFont: ()->OpentypeJS.Font){
+private fun RBuilder.char(groupKey: Int, unicode: Int, getFont: ()->Font){
     child(Char::class){
         attrs {
             this.groupKey = groupKey
@@ -101,7 +116,7 @@ private fun RBuilder.char(groupKey: Int, unicode: Int, getFont: ()->OpentypeJS.F
 }
 
 interface CharGridProps : RProps {
-    var getFont: ()->OpentypeJS.Font
+    var getFont: ()->Font
     var searchUnicode: Int
 }
 
@@ -120,7 +135,7 @@ private class CharGrid(props: CharGridProps) : RComponent<CharGridProps, CharGri
 
     }
 
-    override fun componentWillUpdate(nextProps: CharGridProps, nextState: CharGridState) {
+    override fun UNSAFE_componentWillUpdate(nextProps: CharGridProps, nextState: CharGridState) {
         state.showingStartUnicode = nextProps.searchUnicode
         state.showingEndUnicode = nextProps.searchUnicode
     }
@@ -166,12 +181,12 @@ private class CharGrid(props: CharGridProps) : RComponent<CharGridProps, CharGri
     }
 }
 
-fun RBuilder.charGrid(getFont: ()->OpentypeJS.Font, searchUnicode: Int = 0) = child(CharGrid::class){
+fun RBuilder.charGrid(getFont: ()->Font, searchUnicode: Int = 0) = child(CharGrid::class){
     attrs.getFont = getFont
     attrs.searchUnicode = searchUnicode
 }
 
-fun RBuilder.charGrid(getFont: ()->OpentypeJS.Font, searchUnicodeHex: String = "0") = child(CharGrid::class){
+fun RBuilder.charGrid(getFont: ()->Font, searchUnicodeHex: String = "0") = child(CharGrid::class){
     attrs.getFont = getFont
     attrs.searchUnicode = searchUnicodeHex.toIntOrNull(16)?:0
 }
