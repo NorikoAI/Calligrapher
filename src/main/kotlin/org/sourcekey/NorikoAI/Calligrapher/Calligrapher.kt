@@ -1,6 +1,5 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
-import ExtendedFun.jsObject
 import ExtendedFun.range
 import OpentypeJS.Font
 import OpentypeJS.Glyph
@@ -8,12 +7,14 @@ import OpentypeJS.Path
 import TensorFlowJS.Tensor
 import TensorFlowJS.TensorflowVisualization
 import TensorFlowJS.tfvis
+import kotlinext.js.jsObject
 import kotlinx.browser.document
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import org.w3c.dom.*
 import kotlin.js.Json
+import kotlin.js.Promise
 import kotlin.random.Random
 
 
@@ -54,6 +55,51 @@ class Calligrapher(
     private val dataConverter = DataConverter()
 
     /**
+     *
+     * */
+    private class TrainingSet(val inputs: Array<Array<Json>>, val labels: Array<Array<Json>>)
+
+    /**
+     *
+     * */
+    private fun toTrainingSet(char1: Glyph, char2: Glyph): TrainingSet?{
+        /**
+         * ==========================================
+         * |      | 字形1           | 字形2
+         * |-----------------------------------------
+         * | 字符1 | char1glyph1    | char1glyph2
+         * | 字符2 | char2glyph1    | char2glyph2
+         * ==========================================
+         *
+         * ==========================================
+         * | 輸入             | 輸出
+         * |-----------------------------------------
+         * | [                | [
+         * | char1glyph1,     | char1glyph2,
+         * | char2glyph1,     | char2glyph1,(無用)
+         * | char2glyph2,     | char2glyph2,(無用)
+         * | ]                | ]
+         * ==========================================
+         */
+        val char1glyph1 = char1.referenceGlyph?: return null
+        val char1glyph2 = char1
+        val char2glyph1 = char2.referenceGlyph?: return null
+        val char2glyph2 = char2
+        return TrainingSet(
+            arrayOf(
+                char1glyph1.path.commands,
+                char2glyph1.path.commands,
+                char2glyph2.path.commands
+            ),
+            arrayOf(
+                char1glyph2.path.commands,
+                arrayOf(),
+                arrayOf()
+            )
+        )
+    }
+
+    /**
      * 每次訓練數量
      *
      * 為左避免匯入大量數據作訓練而造成超載
@@ -66,9 +112,10 @@ class Calligrapher(
      * */
     private fun getSequenceTrainingData(
         sectionSize: Int = this.sectionSize,
-        onGet: suspend (inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>>)->Unit
-    ){
-        GlobalScope.launch {
+        onGet: (inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>>)->Promise<History>?
+    ): Promise<ArrayList<History?>>{
+        return Promise{ resolve: (ArrayList<History?>) -> Unit, reject: (Throwable) -> Unit -> GlobalScope.launch {
+            val historys = ArrayList<History?>()
             val filterNotForLearningFont = ArrayList<Glyph>()
             for(glyph in font){ if(glyph?.filterNotKeep()?.filterInvalid() != null){
                 filterNotForLearningFont.add(glyph)
@@ -78,52 +125,26 @@ class Calligrapher(
             for (char2 in filterNotForLearningFont) {
                 for ((i, char1) in filterNotForLearningFont.withIndex()) {
                     //收集部分訓練資料
-                    /**
-                     * ==========================================
-                     * |      | 字形1           | 字形2
-                     * |-----------------------------------------
-                     * | 字符1 | char1glyph1    | char1glyph2
-                     * | 字符2 | char2glyph1    | char2glyph2
-                     * ==========================================
-                     *
-                     * ==========================================
-                     * | 輸入             | 輸出
-                     * |-----------------------------------------
-                     * | [                | [
-                     * | char1glyph1,     | char1glyph2,
-                     * | char2glyph1,     | char2glyph1,(無用)
-                     * | char2glyph2,     | char2glyph2,(無用)
-                     * | ]                | ]
-                     * ==========================================
-                     */
-                    val char1glyph1 = char1.referenceGlyph?: break
-                    val char1glyph2 = char1
-                    val char2glyph1 = char2.referenceGlyph?: break
-                    val char2glyph2 = char2
-                    inputsSection.add(arrayOf(
-                        char1glyph1.path.commands,
-                        char2glyph1.path.commands,
-                        char2glyph2.path.commands
-                    ))
-                    labelsSection.add(arrayOf(
-                        char1glyph2.path.commands,
-                        char2glyph1.path.commands,
-                        char2glyph2.path.commands
-                    ))
+                    val trainingSet = toTrainingSet(char1, char2)?: break
+                    inputsSection.add(trainingSet.inputs)
+                    labelsSection.add(trainingSet.labels)
                     //return部分訓練資料
                     if (i % sectionSize >= sectionSize - 1 || i >= filterNotForLearningFont.lastIndex) {
+                        val inputs = inputsSection.toTypedArray()
+                        val labels = labelsSection.toTypedArray()
                         // 打亂資料，在訓練最好都要做打亂資料的動作
-                        //tf.util.shuffle(inputsSection)
-                        //tf.util.shuffle(labelsSection)
+                        //tf.util.shuffleCombo(inputs, labels)
                         //return
-                        onGet(inputsSection.toTypedArray(), labelsSection.toTypedArray())
+                        historys.add(onGet(inputs, labels)?.await())
                         //清空
                         inputsSection = ArrayList()
                         labelsSection = ArrayList()
                     }
                 }
             }
-        }
+            //訓練完成
+            resolve(historys)
+        } }
     }
 
     /**
@@ -131,9 +152,10 @@ class Calligrapher(
      * */
     private fun getTrainingData(
         sectionSize: Int = this.sectionSize,
-        onGet: suspend (inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>>)->Unit
-    ){
-        GlobalScope.launch {
+        onGet: (inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>>)->Promise<History>?
+    ): Promise<ArrayList<History?>>{
+        return Promise{ resolve: (ArrayList<History?>) -> Unit, reject: (Throwable) -> Unit -> GlobalScope.launch {
+            val historys = ArrayList<History?>()
             val filterNotForLearningFont = ArrayList<Glyph>()
             for(glyph in font){ if(glyph?.filterNotKeep()?.filterInvalid() != null){
                 filterNotForLearningFont.add(glyph)
@@ -142,53 +164,27 @@ class Calligrapher(
             var labelsSection = ArrayList<Array<Array<Json>>>()
             for ((i, char1) in filterNotForLearningFont.withIndex()) {
                 //收集部分訓練資料
-                /**
-                 * ==========================================
-                 * |      | 字形1           | 字形2
-                 * |-----------------------------------------
-                 * | 字符1 | char1glyph1    | char1glyph2
-                 * | 字符2 | char2glyph1    | char2glyph2
-                 * ==========================================
-                 *
-                 * ==========================================
-                 * | 輸入             | 輸出
-                 * |-----------------------------------------
-                 * | [                | [
-                 * | char1glyph1,     | char1glyph2,
-                 * | char2glyph1,     | char2glyph1,(無用)
-                 * | char2glyph2,     | char2glyph2,(無用)
-                 * | ]                | ]
-                 * ==========================================
-                 */
                 val randomNumber = Random.range(0, filterNotForLearningFont.size)?: break
                 val char2 = filterNotForLearningFont.getOrNull(randomNumber)?: break
-                val char1glyph1 = char1.referenceGlyph?: break
-                val char1glyph2 = char1
-                val char2glyph1 = char2.referenceGlyph?: break
-                val char2glyph2 = char2
-                inputsSection.add(arrayOf(
-                        char1glyph1.path.commands,
-                        char2glyph1.path.commands,
-                        char2glyph2.path.commands
-                ))
-                labelsSection.add(arrayOf(
-                        char1glyph2.path.commands,
-                        char2glyph1.path.commands,
-                        char2glyph2.path.commands
-                ))
+                val trainingSet = toTrainingSet(char1, char2)?: break
+                inputsSection.add(trainingSet.inputs)
+                labelsSection.add(trainingSet.labels)
                 //return部分訓練資料
                 if (i % sectionSize >= sectionSize - 1 || i >= filterNotForLearningFont.lastIndex) {
+                    val inputs = inputsSection.toTypedArray()
+                    val labels = labelsSection.toTypedArray()
                     // 打亂資料，在訓練最好都要做打亂資料的動作
-                    //tf.util.shuffle(inputsSection)
-                    //tf.util.shuffle(labelsSection)
+                    //tf.util.shuffleCombo(inputs, labels)
                     //return
-                    onGet(inputsSection.toTypedArray(), labelsSection.toTypedArray())
+                    historys.add(onGet(inputs, labels)?.await())
                     //清空
                     inputsSection = ArrayList()
                     labelsSection = ArrayList()
                 }
             }
-        }
+            //訓練完成
+            resolve(historys)
+        } }
     }
 
     /**
@@ -198,22 +194,16 @@ class Calligrapher(
         predictUnicodes: Array<Int>,
         onGet: (input: Array<Array<Array<Json>>>, unicode: Int)->Unit
     ){
+        val filterNotForLearningFont = ArrayList<Glyph>()
+        for(glyph in font){ if(glyph?.filterNotKeep()?.filterInvalid() != null){
+            filterNotForLearningFont.add(glyph)
+        } }
         for(char1Unicode in predictUnicodes){
-            val filterNotForLearningFont = ArrayList<Glyph>()
-            for(glyph in font){ if(glyph?.filterNotKeep()?.filterInvalid() != null){
-                filterNotForLearningFont.add(glyph)
-            } }
             val char1 = font.getGlyphByUnicode(char1Unicode)?: break
             val randomNumber = Random.range(0, filterNotForLearningFont.size)?: break
             val char2 = filterNotForLearningFont.getOrNull(randomNumber)?: break
-            val char1glyph1 = char1.referenceGlyph?: break
-            val char2glyph1 = char2.referenceGlyph?: break
-            val char2glyph2 = char2
-            onGet(arrayOf(arrayOf(
-                char1glyph1.path.commands,
-                char2glyph1.path.commands,
-                char2glyph2.path.commands
-            )), char1Unicode)
+            val trainingSet = toTrainingSet(char1, char2)?: break
+            onGet(arrayOf(trainingSet.inputs), char1Unicode)
         }
     }
 
@@ -388,16 +378,16 @@ class Calligrapher(
     /**
      *
      * */
-    private fun trainingArgs(inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>>, inputsTensor: Tensor): Json {
+    private fun trainingArgs(inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>>, inputsTensor: Tensor): dynamic {
         return jsObject{
             this.batchSize = batchSize
             this.epochs = epochs
             shuffle = true
             callbacks = jsObject {
                 val fitCallbacks = tfvis.show.fitCallbacks(
-                    jsObject{ tab = "Training"; name = "Training Performance"; },
+                    jsObject<dynamic>{ tab = "Training"; name = "Training Performance"; } as Json,
                     arrayOf("loss", "mse"),
-                    jsObject{ height = 200 }
+                    jsObject<dynamic>{ height = 200 } as Json
                 )
                 //onTrainBegin = fun(logs: dynamic){fitCallbacks.onTrainBegin(logs)}
                 //onTrainEnd = fun(logs: dynamic){fitCallbacks.onTrainEnd(logs)}
@@ -421,16 +411,32 @@ class Calligrapher(
         }
     }
 
+    fun testConverter(){
+        var inputsSection = ArrayList<Array<Array<Json>>>()
+        var labelsSection = ArrayList<Array<Array<Json>>>()
+        val char1 = font.getGlyphByUnicode(35)?: return
+        val char2 = font.getGlyphByUnicode(57)?: return
+        val trainingSet = toTrainingSet(char1, char2)?: return
+        inputsSection.add(trainingSet.inputs)
+        labelsSection.add(trainingSet.labels)
+        val output = dataConverter.decodeTensor(dataConverter.encodeTensor(inputsSection.toTypedArray()))
+        //集合數據
+        val trainingResults = arrayOf(TrainingResult(inputsSection[0], output[0], labelsSection[0])).toList()
+        //顯示預測
+        val container = tfvis.visor().surface(jsObject{ tab = "Training"; name = "預測結果"; }).drawArea
+        tfvis.render.imageTable(container, trainingResults)
+    }
+
     /**
      * 訓練
      * */
-    fun train(){
-        getTrainingData{ inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>> ->
+    fun train(): Promise<ArrayList<History?>>{
+        return getTrainingData{ inputs: Array<Array<Array<Json>>>, labels: Array<Array<Array<Json>>> ->
             //轉成Tensor
             val inputsTensor = dataConverter.encodeTensor(inputs)
             val labelsTensor = dataConverter.encodeTensor(labels)
             //訓練
-            modelManager.train(inputsTensor, labelsTensor, trainingArgs(inputs, labels, inputsTensor))?.await()
+            modelManager.train(inputsTensor, labelsTensor, trainingArgs(inputs, labels, inputsTensor))
         }
     }
 

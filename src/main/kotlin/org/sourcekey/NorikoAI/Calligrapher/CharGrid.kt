@@ -1,8 +1,8 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
-import ExtendedFun.jsObject
 import OpentypeJS.Font
 import OpentypeJS.Glyph
+import kotlinext.js.jsObject
 import kotlinx.browser.window
 import kotlinx.css.*
 import kotlinx.html.js.onClickFunction

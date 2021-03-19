@@ -1,12 +1,11 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
-import ExtendedFun.jsObject
 import TensorFlowJS.LayersModel
 import TensorFlowJS.SaveResult
 import TensorFlowJS.Tensor
 import TensorFlowJS.tf
+import kotlinext.js.jsObject
 import org.w3c.dom.History
-import kotlin.js.Json
 import kotlin.js.Promise
 
 
@@ -245,13 +244,35 @@ class ModelManager(private val project: Project, private val dataConverter: Data
         return model
     }
 
+    private val newModel10 = fun(): LayersModel {
+        val model = tf.sequential()
+        model.add(tf.layers.dense(jsObject {
+            units = dataConverter.outputUnits
+            useBias = true
+            //inputLength = dataShape[dataShape.lastIndex - 2]
+            //inputDim = dataShape[dataShape.lastIndex - 1]
+            inputShape = dataConverter.inputShape
+        }))
+        for(i in 0..10){
+            model.add(tf.layers.dense(jsObject {
+                units = 100
+                useBias = true
+            }))
+        }
+        model.add(tf.layers.dense(jsObject {
+            units = dataConverter.outputUnits
+            useBias = true
+        }))
+        return model
+    }
+
     /**
      *
      * */
     val models = run {
         val models = ArrayLinkList<ModelShape>()
         val modelName = project.name + "Model"
-        models.add(ModelShape(modelName, newModel9))
+        models.add(ModelShape(modelName, newModel6))
         models
     }
 
@@ -357,7 +378,7 @@ class ModelManager(private val project: Project, private val dataConverter: Data
     /**
      * 訓練模形
      * */
-    fun train(inputs: Tensor, labels: Tensor, args: Json): Promise<History>? {
+    fun train(inputs: Tensor, labels: Tensor, args: dynamic): Promise<History>? {
         return tf.tidy {
             model?.fit(inputs, labels, args)
         }

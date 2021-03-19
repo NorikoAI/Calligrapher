@@ -8,7 +8,7 @@ import kotlin.random.Random
 /**
  *
  * */
-inline fun jsObject(init: dynamic.() -> Unit): Json {
+inline fun jsO(init: dynamic.() -> Unit): Json {
     val obj = js("{}")
     init(obj)
     return obj

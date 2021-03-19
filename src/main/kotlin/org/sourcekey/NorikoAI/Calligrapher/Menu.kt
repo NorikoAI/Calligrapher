@@ -2,6 +2,7 @@ package org.sourcekey.NorikoAI.Calligrapher
 
 import ExtendedFun.drawNumbersOfRange
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.await
 import kotlinx.coroutines.launch
 import kotlinx.css.*
 import kotlinx.html.InputType
@@ -108,8 +109,10 @@ class Menu : RComponent<RProps, RState>() {
         }
         button {
             attrs.onClickFunction = fun(event){
-                for(i in 35..57){ project.font.getGlyphByUnicode(i)?.isKeep = true }
-                project.calligrapher.train()
+                GlobalScope.launch {
+                    for(i in 35..57){ project.font.getGlyphByUnicode(i)?.isKeep = true }
+                    for(i in 0..20){project.calligrapher.train().await()}
+                }
             }
             +"Q T"
         }
@@ -140,9 +143,7 @@ class Menu : RComponent<RProps, RState>() {
         button {
             attrs.onClickFunction = fun(event){
                 GlobalScope.launch {
-                    println("S")
                     project.calligrapher.predict(unicode)
-                    println("F")
                 }
             }
             +"Predict"
@@ -180,6 +181,12 @@ class Menu : RComponent<RProps, RState>() {
                 //model?.save("downloads://my-model")
             }
             +"Download Model"
+        }
+        button {
+            attrs.onClickFunction = fun(event){
+                project.calligrapher.testConverter()
+            }
+            +"C T"
         }
     }
 }

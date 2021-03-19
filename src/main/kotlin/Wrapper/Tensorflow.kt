@@ -1140,9 +1140,20 @@ open external class Util{
 
     fun shuffle(array: Float32Array)
 
-    fun shuffle(array: Any)
+    fun shuffle(array: Array<dynamic>)
 
-    fun sizeFromShape(shape: Array<Int>)
+    fun shuffleCombo(array: Uint32Array, array2: Uint32Array)
+
+    fun shuffleCombo(array: Int32Array, array2: Int32Array)
+
+    fun shuffleCombo(array: Float32Array, array2: Float32Array)
+
+    fun shuffleCombo(array: Array<dynamic>, array2: Array<dynamic>)
+
+    fun sizeFromShape(shape: Array<Number>): Number
+
+    fun isScalarShape(shape: Array<Number>): Boolean
+
 }
 
 open external class PixelData

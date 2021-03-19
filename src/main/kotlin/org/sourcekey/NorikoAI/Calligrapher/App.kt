@@ -1,9 +1,10 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
-import ExtendedFun.jsObject
 import OpentypeJS.Font
 import com.ccfraser.muirwik.components.mThemeProvider
+import com.ccfraser.muirwik.components.styles.SimplePaletteColorOptions
 import com.ccfraser.muirwik.components.styles.createMuiTheme
+import kotlinext.js.jsObject
 import kotlinx.browser.window
 import kotlinx.css.*
 import react.*
@@ -11,16 +12,13 @@ import styled.css
 import styled.styledDiv
 
 
-var theme = createMuiTheme(jsObject {
-    palettle = jsObject {
-        primary = jsObject {
-            light = "#757cFF"
-            main = "#3f50FF"
-            dark = "#0028FF"
-            contrastText = "#fff"
+var theme = createMuiTheme(jsObject{
+    palette = jsObject {
+        primary = jsObject<SimplePaletteColorOptions> {
+            main = "#FC0"
         }
     }
-}.asDynamic())
+})
 
 val wcl01Url: String = "font/HanWang/WCL-01.ttf"
 

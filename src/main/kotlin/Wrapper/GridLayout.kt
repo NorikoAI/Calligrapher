@@ -5,7 +5,6 @@ package react.infinitegrid
 
 import react.RClass
 import react.RProps
-import kotlin.js.Json
 
 external class OnAppendEvent{
     val currentTarget: dynamic
@@ -68,8 +67,8 @@ external interface GridLayoutProps: RProps {
     var horizontal: Boolean
     var percentage: Boolean
     var transitionDuration: Number
-    var options: Json
-    var layoutOptions: Json
+    var options: dynamic
+    var layoutOptions: dynamic
     var layoutType: dynamic //Class
     var status: dynamic //IInfiniteGridStatus
     var loading: dynamic //React.ReactElement loading={<div>Loading...</div>}

@@ -44,7 +44,7 @@ dependencies {
     implementation(npm("opentype.js", opentypeJsVersion))
     //implementation(npm("@types/opentype.js", "1.3.1", generateExternals = true))
     //TensorFlow
-    implementation(npm("@tensorflow/tfjs", "~2.8.3", generateExternals = false))
+    implementation(npm("@tensorflow/tfjs", "3.2.0", generateExternals = false))
     implementation(npm("@tensorflow/tfjs-vis", "1.4.3", generateExternals = false))
     //D3
     val d3Version = "6.2.0"

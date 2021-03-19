@@ -3,9 +3,6 @@ package org.sourcekey.NorikoAI.Calligrapher
 import OpentypeJS.Font
 import OpentypeJS.load
 import kotlinext.js.jsObject
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.await
-import kotlinx.coroutines.launch
 
 
 
@@ -19,7 +16,7 @@ data class Project(
      *
      * */
     var referenceFont: Font = run {
-        GlobalScope.launch { referenceFont = load(referenceFontUrl).await() }
+        load(referenceFontUrl).then { referenceFont = it }
         Font(jsObject {
             familyName = "null"
             styleName = "null"
@@ -34,11 +31,7 @@ data class Project(
      *
      * */
     var font: Font = run {
-        GlobalScope.launch {
-            font = load(fontUrl).await()
-            //font = font.clearNullGlyph()
-            font
-        }
+        load(fontUrl).then { font = it }
         Font(jsObject {
             familyName = "null"
             styleName = "null"

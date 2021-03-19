@@ -1,12 +1,12 @@
 package org.sourcekey.NorikoAI.Calligrapher
 
 import ExtendedFun.equals
-import ExtendedFun.jsObject
 import ExtendedFun.values
 import OpentypeJS.Glyph
 import TensorFlowJS.Tensor
 import TensorFlowJS.tf
 import kotlinext.js.Object
+import kotlinext.js.jsObject
 import kotlin.js.Json
 import kotlin.math.roundToInt
 
@@ -138,45 +138,35 @@ class DataConverter {
                 val typesMax = types.maxElementIndex()
                 val type = Type.values().getOrNull(typesMax)
                 when(type){
-                    Type.M -> {
-                        return jsObject {
-                            this.type = "M"
-                            x = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
-                            y = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
-                        }
-                    }
-                    Type.L -> {
-                        return jsObject {
-                            this.type = "L"
-                            x = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
-                            y = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
-                        }
-                    }
-                    Type.C -> {
-                        return jsObject {
-                            this.type = "C"
-                            x1 = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
-                            y1 = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
-                            x2 = this@commandEncode.getOrNull(Type.lastIndex+3)?.roundToInt()?:return null
-                            y2 = this@commandEncode.getOrNull(Type.lastIndex+4)?.roundToInt()?:return null
-                            x = this@commandEncode.getOrNull(Type.lastIndex+5)?.roundToInt()?:return null
-                            y = this@commandEncode.getOrNull(Type.lastIndex+6)?.roundToInt()?:return null
-                        }
-                    }
-                    Type.Q -> {
-                        return jsObject {
-                            this.type = "Q"
-                            x1 = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
-                            y1 = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
-                            x = this@commandEncode.getOrNull(Type.lastIndex+3)?.roundToInt()?:return null
-                            y = this@commandEncode.getOrNull(Type.lastIndex+4)?.roundToInt()?:return null
-                        }
-                    }
-                    Type.Z -> {
-                        return jsObject {
-                            this.type = "Z"
-                        }
-                    }
+                    Type.M -> { return jsObject {
+                        asDynamic().type = "M"
+                        asDynamic().x = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
+                        asDynamic().y = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
+                    } }
+                    Type.L -> { return jsObject {
+                        asDynamic().type = "L"
+                        asDynamic().x = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
+                        asDynamic().y = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
+                    } }
+                    Type.C -> { return jsObject {
+                        asDynamic().type = "C"
+                        asDynamic().x1 = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
+                        asDynamic().y1 = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
+                        asDynamic().x2 = this@commandEncode.getOrNull(Type.lastIndex+3)?.roundToInt()?:return null
+                        asDynamic().y2 = this@commandEncode.getOrNull(Type.lastIndex+4)?.roundToInt()?:return null
+                        asDynamic().x = this@commandEncode.getOrNull(Type.lastIndex+5)?.roundToInt()?:return null
+                        asDynamic().y = this@commandEncode.getOrNull(Type.lastIndex+6)?.roundToInt()?:return null
+                    } }
+                    Type.Q -> { return jsObject {
+                        asDynamic().type = "Q"
+                        asDynamic().x1 = this@commandEncode.getOrNull(Type.lastIndex+1)?.roundToInt()?:return null
+                        asDynamic().y1 = this@commandEncode.getOrNull(Type.lastIndex+2)?.roundToInt()?:return null
+                        asDynamic().x = this@commandEncode.getOrNull(Type.lastIndex+3)?.roundToInt()?:return null
+                        asDynamic().y = this@commandEncode.getOrNull(Type.lastIndex+4)?.roundToInt()?:return null
+                    } }
+                    Type.Z -> { return jsObject {
+                        asDynamic().type = "Z"
+                    } }
                 }
                 return null
             }
@@ -443,5 +433,5 @@ class DataConverter {
      * @returns
      */
     val decodeTensor = converterDimension.decodeTensor
-}
 
+}
