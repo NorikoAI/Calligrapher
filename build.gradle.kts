@@ -75,3 +75,9 @@ kotlin {
         useCommonJs()
     }
 }
+/*
+tasks.withType<KotlinCompile>().configureEach {
+    kotlinOptions {
+        useIR = true
+    }
+}*/

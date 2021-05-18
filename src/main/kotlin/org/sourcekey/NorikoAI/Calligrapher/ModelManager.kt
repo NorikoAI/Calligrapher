@@ -58,7 +58,7 @@ class ModelManager(private val project: Project, private val dataConverter: Data
             val model = tf.sequential()
             model.add(tf.layers.lstm(jsObject {
                 units = 200
-                returnSequences = false
+                returnSequences = true
                 inputShape = dataConverter.inputShape
             }))
             model.add(tf.layers.dense(jsObject {
@@ -172,7 +172,7 @@ class ModelManager(private val project: Project, private val dataConverter: Data
         return model
     }
 
-    private val newModel6 = fun(): LayersModel {
+    private val newModel6_Permute = fun(): LayersModel {
         val model = tf.sequential()
         model.add(tf.layers.dense(jsObject {
             units = dataConverter.outputUnits
@@ -272,7 +272,7 @@ class ModelManager(private val project: Project, private val dataConverter: Data
     val models = run {
         val models = ArrayLinkList<ModelShape>()
         val modelName = project.name + "Model"
-        models.add(ModelShape(modelName, newModel6))
+        models.add(ModelShape(modelName, newModel1))
         models
     }
 
